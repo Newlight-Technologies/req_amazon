@@ -71,14 +71,40 @@ defmodule ReqAmazon.SpApi.CustomerFeedback do
           {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_browse_node_review_trends(%Req.Request{} = req, browse_node_id, opts)
       when is_binary(browse_node_id) and is_list(opts) do
-    marketplace_id = Keyword.fetch!(opts, :marketplace_id)
-    params = %{} |> put_param("marketplaceId", marketplace_id)
-
     ReqAmazon.SpApi.request(
       req,
       :get,
       "#{@base_path}/browseNodes/#{path_segment(browse_node_id)}/reviews/trends",
-      params: params
+      params: marketplace_params(opts)
     )
+  end
+
+  @spec get_browse_node_return_topics(Req.Request.t(), String.t(), keyword()) ::
+          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+  def get_browse_node_return_topics(%Req.Request{} = req, browse_node_id, opts)
+      when is_binary(browse_node_id) and is_list(opts) do
+    ReqAmazon.SpApi.request(
+      req,
+      :get,
+      "#{@base_path}/browseNodes/#{path_segment(browse_node_id)}/returns/topics",
+      params: marketplace_params(opts)
+    )
+  end
+
+  @spec get_browse_node_return_trends(Req.Request.t(), String.t(), keyword()) ::
+          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+  def get_browse_node_return_trends(%Req.Request{} = req, browse_node_id, opts)
+      when is_binary(browse_node_id) and is_list(opts) do
+    ReqAmazon.SpApi.request(
+      req,
+      :get,
+      "#{@base_path}/browseNodes/#{path_segment(browse_node_id)}/returns/trends",
+      params: marketplace_params(opts)
+    )
+  end
+
+  defp marketplace_params(opts) do
+    marketplace_id = Keyword.fetch!(opts, :marketplace_id)
+    %{} |> put_param("marketplaceId", marketplace_id)
   end
 end
