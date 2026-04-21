@@ -5,6 +5,7 @@ This matrix reflects the `req_amazon` codebase on April 21, 2026.
 The high-priority families in this pass were spot-checked against Amazon's current public documentation:
 
 - Orders
+- Pricing
 - Customer Feedback
 - Listings
 - Catalog Items
@@ -45,7 +46,8 @@ The remaining rows are a repo coverage inventory based on the version each modul
 | `ReqAmazon.SpApi.Notifications` | `lib/req_amazon/sp_api/notifications.ex` | `v1` | Current wrapper |
 | `ReqAmazon.SpApi.Orders` | `lib/req_amazon/sp_api/orders.ex` | `v0` | Legacy wrapper kept for compatibility |
 | `ReqAmazon.SpApi.OrdersV20260101` | `lib/req_amazon/sp_api/orders_v2026_01_01.ex` | `v2026-01-01` | Current wrapper added in this pass |
-| `ReqAmazon.SpApi.Pricing` | `lib/req_amazon/sp_api/pricing.ex` | `v0`, `v2022-05-01` | Mixed historical module; future splits should prefer explicit side-by-side modules |
+| `ReqAmazon.SpApi.Pricing` | `lib/req_amazon/sp_api/pricing.ex` | `v0` | Legacy wrapper kept for compatibility |
+| `ReqAmazon.SpApi.PricingV20220501` | `lib/req_amazon/sp_api/pricing_v2022_05_01.ex` | `v2022-05-01` | Current wrapper added in this pass |
 | `ReqAmazon.SpApi.ProductFees` | `lib/req_amazon/sp_api/product_fees.ex` | `v0` | Legacy wrapper |
 | `ReqAmazon.SpApi.ProductTypeDefinitions` | `lib/req_amazon/sp_api/product_type_definitions.ex` | `v2020-09-01` | Current wrapper, verified in tests in this pass |
 | `ReqAmazon.SpApi.Replenishment` | `lib/req_amazon/sp_api/replenishment.ex` | `v2022-11-07` | Current wrapper |

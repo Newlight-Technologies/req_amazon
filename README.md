@@ -13,10 +13,12 @@ Add `req_amazon` as a git dependency in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:req_amazon, git: "https://github.com/Newlight-Technologies/req_amazon.git", branch: "main"}
+    {:req_amazon, git: "https://github.com/Newlight-Technologies/req_amazon.git", ref: "<commit-or-tag>"}
   ]
 end
 ```
+
+Prefer pinning consuming applications to a commit or tag instead of tracking `main`.
 
 ## Credentials And Configuration
 
@@ -142,6 +144,8 @@ Current examples:
 - `ReqAmazon.SpApi.Orders` keeps the legacy Orders `v0` wrapper.
 - `ReqAmazon.SpApi.OrdersV20260101` wraps the current Orders `v2026-01-01` API.
 - `ReqAmazon.SpApi.Finances` and `ReqAmazon.SpApi.FinancesV2` keep legacy and current finance surfaces separate.
+- `ReqAmazon.SpApi.Pricing` keeps the legacy Product Pricing `v0` wrapper.
+- `ReqAmazon.SpApi.PricingV20220501` wraps the current Product Pricing `v2022-05-01` API.
 
 See [docs/api_version_matrix.md](docs/api_version_matrix.md) for the repo-wide matrix and [docs/sp_api_parity_checklist.md](docs/sp_api_parity_checklist.md) for the parity policy and audit notes from this pass.
 
@@ -182,6 +186,19 @@ ReqAmazon.SpApi.OrdersV20260101.search_orders(
   created_after: "2026-03-01T00:00:00Z",
   marketplace_ids: ["ATVPDKIKX0DER"],
   included_data: ["BUYER", "RECIPIENT"]
+)
+```
+
+Current Pricing API:
+
+```elixir
+ReqAmazon.SpApi.PricingV20220501.get_competitive_summary(
+  req,
+  %{
+    "requests" => [
+      %{"asin" => "B000123", "marketplaceId" => "ATVPDKIKX0DER"}
+    ]
+  }
 )
 ```
 

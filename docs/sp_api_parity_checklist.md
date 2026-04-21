@@ -6,7 +6,7 @@ Audit date: April 21, 2026
 
 - Before this pass, `mix test` passed with `24` tests and `0` failures.
 - Before this pass, `mix compile` succeeded.
-- After this pass, `mix test` passes with `41` tests and `0` failures.
+- After this pass, `mix test` passes with `47` tests and `0` failures.
 - After this pass, `mix compile` succeeds.
 
 ## Policy Decisions
@@ -35,6 +35,7 @@ Audit date: April 21, 2026
 - [x] Expanded Listings query option coverage, including validation preview params and current search filters.
 - [x] Expanded Catalog Items query option coverage, including identifiers, seller scope, locale, keyword filters, and pagination.
 - [x] Verified Product Type Definitions request option coverage and locked it in with tests.
+- [x] Split Product Pricing into explicit legacy and current modules with backwards-compatible delegates.
 - [x] Added transport-level coverage for caller-supplied access tokens, SigV4 credential scope, token injection, user-agent injection, and non-2xx wrapping.
 - [x] Documented the side-by-side versioning policy, wrapper conventions, and module matrix.
 - [x] Updated changelog discipline and bumped the library version to `0.2.0`.
@@ -49,4 +50,3 @@ Audit date: April 21, 2026
 
 - Do a full Amazon-currentness audit for the non-priority API families listed in `docs/api_version_matrix.md`.
 - Apply the explicit side-by-side module split pattern to future breaking Amazon revs instead of growing mixed-version modules.
-- Consider whether older mixed modules, such as `ReqAmazon.SpApi.Pricing`, should eventually be decomposed into explicit legacy/current siblings.

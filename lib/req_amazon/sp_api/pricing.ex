@@ -1,14 +1,20 @@
 defmodule ReqAmazon.SpApi.Pricing do
   @moduledoc """
-  Product Pricing v0 and v2022-05-01 operations.
+  Product Pricing v0 operations.
+
+  This legacy module wraps the Product Pricing v0 surface.
+
+  The current Product Pricing `v2022-05-01` batch endpoints live in
+  `ReqAmazon.SpApi.PricingV20220501`.
+
+  For backwards compatibility, the current batch calls remain available here as
+  deprecated delegates.
   """
 
   import ReqAmazon
+  alias ReqAmazon.SpApi.PricingV20220501
 
-  @base_path_v0 "/products/pricing/v0"
-  @base_path_v1 "/batches/products/pricing/2022-05-01"
-
-  # --- v0 endpoints ---
+  @base_path "/products/pricing/v0"
 
   @spec get_pricing(Req.Request.t(), keyword()) ::
           {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
@@ -25,7 +31,7 @@ defmodule ReqAmazon.SpApi.Pricing do
       |> put_param("ItemCondition", Keyword.get(opts, :item_condition))
       |> put_param("OfferType", Keyword.get(opts, :offer_type))
 
-    ReqAmazon.SpApi.request(req, :get, "#{@base_path_v0}/price", params: params)
+    ReqAmazon.SpApi.request(req, :get, "#{@base_path}/price", params: params)
   end
 
   @spec get_competitive_pricing(Req.Request.t(), keyword()) ::
@@ -42,7 +48,7 @@ defmodule ReqAmazon.SpApi.Pricing do
       |> put_csv_param("Skus", Keyword.get(opts, :skus))
       |> put_param("CustomerType", Keyword.get(opts, :customer_type))
 
-    ReqAmazon.SpApi.request(req, :get, "#{@base_path_v0}/competitivePrice", params: params)
+    ReqAmazon.SpApi.request(req, :get, "#{@base_path}/competitivePrice", params: params)
   end
 
   @spec get_listing_offers(Req.Request.t(), String.t(), keyword()) ::
@@ -61,7 +67,7 @@ defmodule ReqAmazon.SpApi.Pricing do
     ReqAmazon.SpApi.request(
       req,
       :get,
-      "#{@base_path_v0}/listings/#{path_segment(seller_sku)}/offers",
+      "#{@base_path}/listings/#{path_segment(seller_sku)}/offers",
       params: params
     )
   end
@@ -82,7 +88,7 @@ defmodule ReqAmazon.SpApi.Pricing do
     ReqAmazon.SpApi.request(
       req,
       :get,
-      "#{@base_path_v0}/items/#{path_segment(asin)}/offers",
+      "#{@base_path}/items/#{path_segment(asin)}/offers",
       params: params
     )
   end
@@ -93,7 +99,7 @@ defmodule ReqAmazon.SpApi.Pricing do
     ReqAmazon.SpApi.request(
       req,
       :post,
-      "#{@base_path_v0}/batches/items/offers",
+      "#{@base_path}/batches/items/offers",
       json: payload
     )
   end
@@ -104,33 +110,18 @@ defmodule ReqAmazon.SpApi.Pricing do
     ReqAmazon.SpApi.request(
       req,
       :post,
-      "#{@base_path_v0}/batches/listings/offers",
+      "#{@base_path}/batches/listings/offers",
       json: payload
     )
   end
-
-  # --- v2022-05-01 batch endpoints ---
 
   @spec get_featured_offer_expected_price_batch(Req.Request.t(), map()) ::
           {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
-  def get_featured_offer_expected_price_batch(%Req.Request{} = req, payload)
-      when is_map(payload) do
-    ReqAmazon.SpApi.request(
-      req,
-      :post,
-      "#{@base_path_v1}/offer/featuredOfferExpectedPrice",
-      json: payload
-    )
-  end
+  @deprecated "Use ReqAmazon.SpApi.PricingV20220501.get_featured_offer_expected_price_batch/2 instead."
+  defdelegate get_featured_offer_expected_price_batch(req, payload), to: PricingV20220501
 
   @spec get_competitive_summary(Req.Request.t(), map()) ::
           {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
-  def get_competitive_summary(%Req.Request{} = req, payload) when is_map(payload) do
-    ReqAmazon.SpApi.request(
-      req,
-      :post,
-      "#{@base_path_v1}/items/competitiveSummary",
-      json: payload
-    )
-  end
+  @deprecated "Use ReqAmazon.SpApi.PricingV20220501.get_competitive_summary/2 instead."
+  defdelegate get_competitive_summary(req, payload), to: PricingV20220501
 end
