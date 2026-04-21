@@ -1,9 +1,13 @@
 defmodule ReqAmazon.SpApi.Client do
   @moduledoc """
   Convenience builder for configured SP-API Req clients.
+
+  Use `new/1` when you want a ready-to-call request with the SP-API plugin
+  attached. Pass normal Req options such as `:base_url`, and pass plugin options
+  such as `:credentials`, `:access_token`, and `:sandbox`.
   """
 
-  @plugin_option_keys [:credentials, :sandbox]
+  @plugin_option_keys [:access_token, :credentials, :sandbox]
 
   @doc """
   Builds a configured Req client for Amazon SP-API requests.

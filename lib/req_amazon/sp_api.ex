@@ -20,6 +20,19 @@ defmodule ReqAmazon.SpApi do
 
       req = Req.new(base_url: "https://sellingpartnerapi-na.amazon.com")
       |> ReqAmazon.SpApi.attach(credentials: %{...})
+
+  If your application manages LWA refresh itself, pass an access token per request:
+
+      req =
+        Req.new(base_url: "https://sellingpartnerapi-eu.amazon.com")
+        |> ReqAmazon.SpApi.attach(
+          credentials: %{
+            aws_access_key_id: "...",
+            aws_secret_access_key: "...",
+            aws_region: "eu-west-1"
+          },
+          access_token: token
+        )
   """
 
   alias ReqAmazon.SpApi.{Auth, Error}
@@ -28,7 +41,7 @@ defmodule ReqAmazon.SpApi do
   @default_marketplace_id "ATVPDKIKX0DER"
   @default_region "us-east-1"
   @default_token_url "https://api.amazon.com/auth/o2/token"
-  @plugin_options [:credentials, :sandbox]
+  @plugin_options [:access_token, :credentials, :sandbox]
   @forward_request_option_keys [
     :adapter,
     :connect_options,
@@ -45,25 +58,29 @@ defmodule ReqAmazon.SpApi do
     :retry_log_level,
     :unix_socket
   ]
-  @required_credential_keys [
-    :client_id,
-    :client_secret,
-    :refresh_token,
-    :aws_access_key_id,
-    :aws_secret_access_key
-  ]
+  @required_signing_credential_keys [:aws_access_key_id, :aws_secret_access_key]
+  @required_lwa_credential_keys [:client_id, :client_secret, :refresh_token]
+  @credential_keys @required_signing_credential_keys ++
+                     @required_lwa_credential_keys ++ [:aws_region]
 
   @type credentials :: %{
-          required(:client_id) => String.t(),
-          required(:client_secret) => String.t(),
-          required(:refresh_token) => String.t(),
           required(:aws_access_key_id) => String.t(),
           required(:aws_secret_access_key) => String.t(),
+          optional(:client_id) => String.t(),
+          optional(:client_secret) => String.t(),
+          optional(:refresh_token) => String.t(),
           optional(:aws_region) => String.t()
         }
 
   @doc """
   Attaches the Amazon SP-API request and response steps to a Req request.
+
+  Supported plugin options:
+
+  - `:credentials` - SP-API credentials for LWA and SigV4 signing.
+  - `:access_token` - caller-managed LWA access token. When present, the plugin
+    injects the `x-amz-access-token` header and skips the internal token refresh.
+  - `:sandbox` - rewrites the request host to Amazon's sandbox host.
   """
   @spec attach(Req.Request.t(), keyword()) :: Req.Request.t()
   def attach(%Req.Request{} = request, options \\ []) do
@@ -105,15 +122,42 @@ defmodule ReqAmazon.SpApi do
   end
 
   def credentials(%{} = credentials) do
+    credentials(credentials, require_lwa?: true)
+  end
+
+  def credentials(other) do
+    raise ArgumentError,
+          "expected SP-API credentials as a map or keyword list, got: #{inspect(other)}"
+  end
+
+  @doc false
+  @spec credentials(nil | map() | keyword(), keyword()) :: credentials()
+  def credentials(nil, opts) do
+    :req_amazon
+    |> Application.fetch_env!(:sp_api_credentials)
+    |> credentials(opts)
+  end
+
+  def credentials(credentials, opts) when is_list(credentials) do
+    credentials
+    |> Enum.into(%{})
+    |> credentials(opts)
+  end
+
+  def credentials(%{} = credentials, opts) do
+    required_keys =
+      @required_signing_credential_keys ++
+        if Keyword.get(opts, :require_lwa?, true), do: @required_lwa_credential_keys, else: []
+
     normalized =
-      Enum.reduce(@required_credential_keys ++ [:aws_region], %{}, fn key, acc ->
+      Enum.reduce(@credential_keys, %{}, fn key, acc ->
         case credential_value(credentials, key) do
           nil -> acc
           value -> Map.put(acc, key, value)
         end
       end)
 
-    case Enum.reject(@required_credential_keys, &Map.has_key?(normalized, &1)) do
+    case Enum.reject(required_keys, &Map.has_key?(normalized, &1)) do
       [] ->
         Map.put_new(normalized, :aws_region, @default_region)
 
@@ -123,17 +167,10 @@ defmodule ReqAmazon.SpApi do
     end
   end
 
-  def credentials(other) do
-    raise ArgumentError,
-          "expected SP-API credentials as a map or keyword list, got: #{inspect(other)}"
-  end
-
   @doc false
   @spec credentials() :: credentials()
   def credentials do
-    :req_amazon
-    |> Application.fetch_env!(:sp_api_credentials)
-    |> credentials()
+    credentials(nil, require_lwa?: true)
   end
 
   @doc false
@@ -163,7 +200,7 @@ defmodule ReqAmazon.SpApi do
   @doc false
   @spec aws_sigv4(credentials()) :: keyword()
   def aws_sigv4(credentials) do
-    credentials = credentials(credentials)
+    credentials = credentials(credentials, require_lwa?: false)
 
     [
       access_key_id: credentials.aws_access_key_id,
@@ -174,12 +211,19 @@ defmodule ReqAmazon.SpApi do
   end
 
   defp ensure_credentials(request) do
+    require_lwa? = not access_token_provided?(request)
+
     case Map.get(request.options, :credentials) do
       nil ->
-        Req.Request.merge_new_options(request, credentials: credentials())
+        Req.Request.merge_new_options(request,
+          credentials: credentials(nil, require_lwa?: require_lwa?)
+        )
 
       provided ->
-        Req.Request.merge_options(request, credentials: credentials(provided))
+        Req.Request.merge_options(
+          request,
+          credentials: credentials(provided, require_lwa?: require_lwa?)
+        )
     end
   end
 
@@ -207,15 +251,21 @@ defmodule ReqAmazon.SpApi do
   defp sp_api_lwa_token(request) do
     case Req.Request.get_header(request, "x-amz-access-token") do
       [] ->
-        credentials = request.options[:credentials]
-        request_options = forwarded_request_options(request)
-
-        case Auth.fetch_access_token(credentials, request_options, self()) do
-          {:ok, token} ->
+        case request.options[:access_token] do
+          token when is_binary(token) and byte_size(token) > 0 ->
             Req.Request.put_header(request, "x-amz-access-token", token)
 
-          {:error, error} ->
-            Req.Request.halt(request, error)
+          _ ->
+            credentials = request.options[:credentials]
+            request_options = forwarded_request_options(request)
+
+            case Auth.fetch_access_token(credentials, request_options, self()) do
+              {:ok, token} ->
+                Req.Request.put_header(request, "x-amz-access-token", token)
+
+              {:error, error} ->
+                Req.Request.halt(request, error)
+            end
         end
 
       _existing ->
@@ -255,6 +305,11 @@ defmodule ReqAmazon.SpApi do
     request.options
     |> Map.take(@forward_request_option_keys)
     |> Enum.to_list()
+  end
+
+  defp access_token_provided?(request) do
+    match?([_ | _], Req.Request.get_header(request, "x-amz-access-token")) or
+      match?(token when is_binary(token) and byte_size(token) > 0, request.options[:access_token])
   end
 
   defp credential_value(credentials, key) do
