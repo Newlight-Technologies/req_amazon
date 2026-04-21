@@ -6,13 +6,14 @@ Audit date: April 21, 2026
 
 - Before this pass, `mix test` passed with `24` tests and `0` failures.
 - Before this pass, `mix compile` succeeded.
-- After this pass, `mix test` passes with `47` tests and `0` failures.
+- After this pass, `mix test` passes with `66` tests and `0` failures.
 - After this pass, `mix compile` succeeds.
 
 ## Policy Decisions
 
 - Keep legacy and current versions side by side instead of silently retargeting a plain module.
 - Use explicit versioned module and file names for new splits.
+- Prefer date-based versioned names over generic suffixes such as `V2` for new current-version modules.
 - Keep the library transport-focused and version-aware.
 - Do not add Daisy workflow logic or response reshaping business logic.
 
@@ -36,6 +37,11 @@ Audit date: April 21, 2026
 - [x] Expanded Catalog Items query option coverage, including identifiers, seller scope, locale, keyword filters, and pagination.
 - [x] Verified Product Type Definitions request option coverage and locked it in with tests.
 - [x] Split Product Pricing into explicit legacy and current modules with backwards-compatible delegates.
+- [x] Hardened A+ Content coverage with request-construction tests and explicit Brand Story documentation.
+- [x] Hardened Daisy-used Notifications, Data Kiosk, Sellers, and Finances v2024 wrappers with request-construction coverage.
+- [x] Standardized the current Finances naming on `FinancesV20240619` while keeping `FinancesV2` as a compatibility alias.
+- [x] Documented grantless Notifications usage through caller-managed access tokens.
+- [x] Documented Amazon's EU-only constraint on `Sellers.get_account/1`.
 - [x] Added transport-level coverage for caller-supplied access tokens, SigV4 credential scope, token injection, user-agent injection, and non-2xx wrapping.
 - [x] Documented the side-by-side versioning policy, wrapper conventions, and module matrix.
 - [x] Updated changelog discipline and bumped the library version to `0.2.0`.

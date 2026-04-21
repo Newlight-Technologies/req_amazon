@@ -1,6 +1,23 @@
 defmodule ReqAmazon.SpApi.APlusContent do
   @moduledoc """
   A+ Content v2020-11-01 operations.
+
+  This module wraps Amazon's A+ Content Management API, which is the surface
+  used for Basic A+ content, Premium A+ content, and Brand Story content
+  documents.
+
+  Brand Story is not a separate SP-API family. It uses the same content
+  document lifecycle as the rest of A+ Content:
+
+  - validate a content document against target ASINs
+  - create or update the content document
+  - apply ASIN relations
+  - submit the document for approval
+  - inspect publish records and document status
+
+  When a content document includes images, use the Uploads API to create upload
+  destinations and then place the returned `uploadDestinationId` values inside
+  the A+ content payload.
   """
 
   import ReqAmazon

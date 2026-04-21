@@ -1,6 +1,11 @@
 defmodule ReqAmazon.SpApi.Notifications do
   @moduledoc """
   Notifications v1 operations.
+
+  This API family includes grantless operations in Amazon's authorization model.
+  When your application handles token acquisition itself, use caller-managed
+  `:access_token` support in `ReqAmazon.SpApi.attach/2` or
+  `ReqAmazon.SpApi.Client.new/1` and supply the grantless token for the request.
   """
 
   import ReqAmazon

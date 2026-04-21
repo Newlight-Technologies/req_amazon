@@ -1,6 +1,9 @@
 defmodule ReqAmazon.SpApi.Uploads do
   @moduledoc """
   Uploads v2020-11-01 operations.
+
+  This companion API is commonly used by A+ Content workflows to create image
+  upload destinations before a content document is validated and submitted.
   """
 
   import ReqAmazon

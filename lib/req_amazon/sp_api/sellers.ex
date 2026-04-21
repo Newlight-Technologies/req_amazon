@@ -1,6 +1,8 @@
 defmodule ReqAmazon.SpApi.Sellers do
   @moduledoc """
   Sellers v1 operations.
+
+  `get_account/1` is documented by Amazon as an EU-only operation.
   """
 
   @spec get_marketplace_participations(Req.Request.t()) ::

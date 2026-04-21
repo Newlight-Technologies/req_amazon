@@ -104,6 +104,10 @@ req =
   )
 ```
 
+This same pattern also applies to SP-API operations that Amazon models as
+grantless. Acquire the correct access token in your application, then pass it
+through `:access_token` for the request.
+
 You can also inject the header yourself before calling `attach/2`:
 
 ```elixir
@@ -134,6 +138,8 @@ The public endpoint modules follow these conventions:
 - Modules convert Elixir opts to Amazon's exact path and query names internally.
 - Current and legacy versions stay side by side when Amazon revs a family in a breaking way.
 - Versioned file and module naming follow `orders_v2026_01_01.ex` -> `ReqAmazon.SpApi.OrdersV20260101`.
+- Prefer date-based version suffixes when Amazon publishes dated versions.
+- Keep older generic names such as `FinancesV2` only as compatibility aliases when needed.
 
 ## Versioning Policy
 
@@ -143,7 +149,9 @@ Current examples:
 
 - `ReqAmazon.SpApi.Orders` keeps the legacy Orders `v0` wrapper.
 - `ReqAmazon.SpApi.OrdersV20260101` wraps the current Orders `v2026-01-01` API.
-- `ReqAmazon.SpApi.Finances` and `ReqAmazon.SpApi.FinancesV2` keep legacy and current finance surfaces separate.
+- `ReqAmazon.SpApi.Finances` keeps the legacy Finances `v0` wrapper.
+- `ReqAmazon.SpApi.FinancesV20240619` wraps the current Finances `v2024-06-19` API.
+- `ReqAmazon.SpApi.FinancesV2` remains as a compatibility alias for `ReqAmazon.SpApi.FinancesV20240619`.
 - `ReqAmazon.SpApi.Pricing` keeps the legacy Product Pricing `v0` wrapper.
 - `ReqAmazon.SpApi.PricingV20220501` wraps the current Product Pricing `v2022-05-01` API.
 
@@ -202,7 +210,18 @@ ReqAmazon.SpApi.PricingV20220501.get_competitive_summary(
 )
 ```
 
-A+ Content:
+Current Finances API:
+
+```elixir
+ReqAmazon.SpApi.FinancesV20240619.list_transactions(
+  req,
+  posted_after: "2026-03-01T00:00:00Z",
+  marketplace_id: "ATVPDKIKX0DER",
+  transaction_status: "RELEASED"
+)
+```
+
+A+ Content / Brand Story:
 
 ```elixir
 ReqAmazon.SpApi.APlusContent.search_content_documents(
@@ -210,6 +229,77 @@ ReqAmazon.SpApi.APlusContent.search_content_documents(
   marketplace_id: "ATVPDKIKX0DER"
 )
 ```
+
+Brand Story content uses the same `ReqAmazon.SpApi.APlusContent` module. There
+is no separate Brand Story API family in SP-API.
+
+Typical lifecycle:
+
+```elixir
+marketplace_opts = [marketplace_id: "ATVPDKIKX0DER"]
+
+payload = %{
+  "contentDocument" => %{
+    "name" => "Brand Story - Core Collection",
+    "contentType" => "EMC",
+    "locale" => "en-US",
+    "contentModuleList" => []
+  }
+}
+
+ReqAmazon.SpApi.APlusContent.validate_content_document_asin_relations(
+  req,
+  marketplace_opts,
+  %{
+    "asinSet" => ["B000123456"],
+    "contentDocument" => payload["contentDocument"]
+  }
+)
+
+ReqAmazon.SpApi.APlusContent.create_content_document(req, marketplace_opts, payload)
+
+ReqAmazon.SpApi.APlusContent.post_content_document_asin_relations(
+  req,
+  "content-ref-key",
+  marketplace_opts,
+  %{"asinSet" => ["B000123456"]}
+)
+
+ReqAmazon.SpApi.APlusContent.post_content_document_approval_submission(
+  req,
+  "content-ref-key",
+  marketplace_id: "ATVPDKIKX0DER"
+)
+```
+
+If the content document contains images, use `ReqAmazon.SpApi.Uploads` first to
+create upload destinations and then place the returned
+`uploadDestinationId` values inside the A+ content payload before validation.
+
+Notifications:
+
+```elixir
+grantless_req =
+  ReqAmazon.SpApi.Client.new(
+    access_token: grantless_token,
+    credentials: %{
+      aws_access_key_id: System.fetch_env!("AMAZON_SP_API_AWS_ACCESS_KEY_ID"),
+      aws_secret_access_key: System.fetch_env!("AMAZON_SP_API_AWS_SECRET_ACCESS_KEY"),
+      aws_region: "us-east-1"
+    }
+  )
+
+ReqAmazon.SpApi.Notifications.get_destinations(grantless_req)
+```
+
+Sellers:
+
+```elixir
+ReqAmazon.SpApi.Sellers.get_marketplace_participations(req)
+ReqAmazon.SpApi.Sellers.get_account(req)
+```
+
+`ReqAmazon.SpApi.Sellers.get_account/1` is documented by Amazon as EU-only.
 
 Product Type Definitions:
 
