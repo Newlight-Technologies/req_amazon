@@ -1,0 +1,84 @@
+defmodule ReqAmazonTest do
+  use ReqAmazon.Case, async: false
+
+  alias ReqAmazon.SpApi.{Client, Error, Orders}
+
+  test "client injects sandbox host, user agent, and caches the LWA token", %{
+    credentials: credentials
+  } do
+    test_pid = self()
+
+    Req.Test.stub(stub_name(), fn conn ->
+      case {conn.host, conn.request_path} do
+        {"api.amazon.com", "/auth/o2/token"} ->
+          send(test_pid, {:token_request, query_params(conn)})
+          Req.Test.json(conn, %{"access_token" => "lwa-token", "expires_in" => 3600})
+
+        {"sandbox.sellingpartnerapi-na.amazon.com", path} ->
+          send(test_pid, {:api_request, path, Plug.Conn.get_req_header(conn, "user-agent")})
+          assert_header(conn, "x-amz-access-token", "lwa-token")
+          Req.Test.json(conn, %{"payload" => %{"AmazonOrderId" => "123-1234567-1234567"}})
+      end
+    end)
+
+    req = Client.new(credentials: credentials, sandbox: true, plug: {Req.Test, stub_name()})
+
+    assert {:ok, %{"AmazonOrderId" => "123-1234567-1234567"}} =
+             Orders.get_order(req, "123-1234567-1234567")
+
+    assert {:ok, %{"AmazonOrderId" => "123-1234567-1234567"}} =
+             Orders.get_order(req, "123-1234567-1234567")
+
+    assert_received {:token_request, %{}}
+    refute_received {:token_request, _params}
+
+    assert_received {:api_request, "/orders/v0/orders/123-1234567-1234567", [user_agent]}
+    assert String.starts_with?(user_agent, "req_amazon/")
+  end
+
+  test "non-2xx responses become ReqAmazon.SpApi.Error", %{credentials: credentials} do
+    stub_with_token(fn conn ->
+      {"sellingpartnerapi-na.amazon.com", _path} = {conn.host, conn.request_path}
+
+      json_response(conn, 400, %{
+        "errors" => [
+          %{
+            "code" => "InvalidInput",
+            "message" => "Bad request",
+            "details" => "Nope"
+          }
+        ]
+      })
+    end)
+
+    req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
+
+    assert {:error,
+            %Error{
+              status: 400,
+              errors: [%{"code" => "InvalidInput"} | _]
+            }} = Orders.get_order(req, "123-1234567-1234567")
+  end
+
+  test "credentials accepts string-keyed maps" do
+    assert %{
+             client_id: "client-1",
+             client_secret: "secret-1",
+             refresh_token: "refresh-1",
+             aws_access_key_id: "AKIA1",
+             aws_secret_access_key: "secret-access-1",
+             aws_region: "us-east-1"
+           } =
+             ReqAmazon.SpApi.credentials(%{
+               "client_id" => "client-1",
+               "client_secret" => "secret-1",
+               "refresh_token" => "refresh-1",
+               "aws_access_key_id" => "AKIA1",
+               "aws_secret_access_key" => "secret-access-1"
+             })
+  end
+
+  test "path_segment uses path encoding" do
+    assert ReqAmazon.path_segment("a b/c") == "a%20b%2Fc"
+  end
+end
