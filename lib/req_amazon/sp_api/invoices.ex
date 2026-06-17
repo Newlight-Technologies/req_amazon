@@ -13,28 +13,24 @@ defmodule ReqAmazon.SpApi.Invoices do
     marketplace_id = Keyword.fetch!(opts, :marketplace_id)
     params = %{} |> put_param("marketplaceId", marketplace_id)
 
-    ReqAmazon.SpApi.request(req, :get, "#{@base_path}/invoicesAttributes", params: params)
+    ReqAmazon.SpApi.request(req, :get, "#{@base_path}/attributes", params: params)
   end
 
   @spec get_invoices_document(Req.Request.t(), String.t(), keyword()) ::
           {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
-  def get_invoices_document(%Req.Request{} = req, invoices_document_id, opts)
-      when is_binary(invoices_document_id) and is_list(opts) do
-    marketplace_id = Keyword.fetch!(opts, :marketplace_id)
-    params = %{} |> put_param("marketplaceId", marketplace_id)
-
+  def get_invoices_document(%Req.Request{} = req, invoices_document_id, _opts \\ [])
+      when is_binary(invoices_document_id) do
     ReqAmazon.SpApi.request(
       req,
       :get,
-      "#{@base_path}/invoicesDocument/#{path_segment(invoices_document_id)}",
-      params: params
+      "#{@base_path}/documents/#{path_segment(invoices_document_id)}"
     )
   end
 
   @spec create_invoices_export(Req.Request.t(), map()) ::
           {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
   def create_invoices_export(%Req.Request{} = req, payload) when is_map(payload) do
-    ReqAmazon.SpApi.request(req, :post, "#{@base_path}/invoicesExports", json: payload)
+    ReqAmazon.SpApi.request(req, :post, "#{@base_path}/exports", json: payload)
   end
 
   @spec get_invoices_exports(Req.Request.t(), keyword()) ::
@@ -45,9 +41,13 @@ defmodule ReqAmazon.SpApi.Invoices do
     params =
       %{}
       |> put_param("marketplaceId", marketplace_id)
+      |> put_param("dateStart", Keyword.get(opts, :date_start))
+      |> put_param("dateEnd", Keyword.get(opts, :date_end))
+      |> put_param("status", Keyword.get(opts, :status))
+      |> put_param("pageSize", Keyword.get(opts, :page_size))
       |> put_param("nextToken", Keyword.get(opts, :next_token))
 
-    ReqAmazon.SpApi.request(req, :get, "#{@base_path}/invoicesExports", params: params)
+    ReqAmazon.SpApi.request(req, :get, "#{@base_path}/exports", params: params)
   end
 
   @spec get_invoices_export(Req.Request.t(), String.t()) ::
@@ -56,7 +56,7 @@ defmodule ReqAmazon.SpApi.Invoices do
     ReqAmazon.SpApi.request(
       req,
       :get,
-      "#{@base_path}/invoicesExports/#{path_segment(export_id)}"
+      "#{@base_path}/exports/#{path_segment(export_id)}"
     )
   end
 

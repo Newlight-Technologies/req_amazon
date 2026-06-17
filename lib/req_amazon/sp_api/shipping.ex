@@ -91,7 +91,9 @@ defmodule ReqAmazon.SpApi.Shipping do
       |> put_param("requestToken", request_token)
       |> put_param("rateId", rate_id)
 
-    ReqAmazon.SpApi.request(req, :get, "#{@base_path}/shipments/additionalInputs", params: params)
+    ReqAmazon.SpApi.request(req, :get, "#{@base_path}/shipments/additionalInputs/schema",
+      params: params
+    )
   end
 
   @spec get_collection_form(Req.Request.t(), map()) ::
@@ -103,7 +105,7 @@ defmodule ReqAmazon.SpApi.Shipping do
   @spec get_unmanifested_shipments(Req.Request.t(), map()) ::
           {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_unmanifested_shipments(%Req.Request{} = req, payload) when is_map(payload) do
-    ReqAmazon.SpApi.request(req, :post, "#{@base_path}/unmanifestedShipments", json: payload)
+    ReqAmazon.SpApi.request(req, :put, "#{@base_path}/unmanifestedShipments", json: payload)
   end
 
   @spec get_access_points(Req.Request.t(), keyword()) ::

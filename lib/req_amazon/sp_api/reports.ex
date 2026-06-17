@@ -4,6 +4,7 @@ defmodule ReqAmazon.SpApi.Reports do
   """
 
   import ReqAmazon
+  alias ReqAmazon.SpApi.Error
 
   @base_path "/reports/2021-06-30"
 
@@ -25,15 +26,83 @@ defmodule ReqAmazon.SpApi.Reports do
     ReqAmazon.SpApi.request(req, :delete, "#{@base_path}/reports/#{path_segment(report_id)}")
   end
 
-  @spec get_report_document(Req.Request.t(), String.t()) ::
+  @spec get_report_document(Req.Request.t(), String.t(), keyword()) ::
           {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
-  def get_report_document(%Req.Request{} = req, report_document_id)
-      when is_binary(report_document_id) do
+  def get_report_document(%Req.Request{} = req, report_document_id, opts \\ [])
+      when is_binary(report_document_id) and is_list(opts) do
+    params =
+      %{}
+      |> put_param(
+        "enableContentEncodingUrlHeader",
+        Keyword.get(opts, :enable_content_encoding_url_header)
+      )
+
     ReqAmazon.SpApi.request(
       req,
       :get,
-      "#{@base_path}/documents/#{path_segment(report_document_id)}"
+      "#{@base_path}/documents/#{path_segment(report_document_id)}",
+      params: params
     )
+  end
+
+  @spec stream_report_document(Req.Request.t(), String.t(), term(), keyword()) ::
+          {:ok, %{document: map(), response: Req.Response.t()}} | {:error, Error.t()}
+  def stream_report_document(%Req.Request{} = req, report_document_id, into, opts \\ [])
+      when is_binary(report_document_id) and is_list(opts) do
+    document_opts =
+      case Keyword.fetch(opts, :enable_content_encoding_url_header) do
+        {:ok, value} -> [enable_content_encoding_url_header: value]
+        :error -> []
+      end
+
+    with {:ok, document} <- get_report_document(req, report_document_id, document_opts),
+         {:ok, response} <- download_report_document(document, into, opts) do
+      {:ok, %{document: document, response: response}}
+    end
+  end
+
+  @spec download_report_document(String.t() | map(), term(), keyword()) ::
+          {:ok, Req.Response.t()} | {:error, Error.t()}
+  def download_report_document(url_or_document, into, opts \\ [])
+
+  def download_report_document(%{"url" => url}, into, opts) do
+    download_report_document(url, into, opts)
+  end
+
+  def download_report_document(%{url: url}, into, opts) do
+    download_report_document(url, into, opts)
+  end
+
+  def download_report_document(url, into, opts) when is_binary(url) and is_list(opts) do
+    request_opts =
+      opts
+      |> Keyword.drop([:enable_content_encoding_url_header])
+      |> Keyword.merge(method: :get, url: url, into: into)
+      |> Keyword.put_new(:raw, true)
+      |> Keyword.put_new(:retry, false)
+
+    case Req.request(request_opts) do
+      {:ok, %Req.Response{status: status} = response} when status in 200..299 ->
+        {:ok, response}
+
+      {:ok, %Req.Response{status: status, body: body}} ->
+        {:error, Error.from_response(status, body)}
+
+      {:error, error} ->
+        {:error, Error.wrap(error)}
+    end
+  end
+
+  def download_report_document(_missing, _into, _opts) do
+    {:error,
+     Error.from_response(nil, %{
+       "errors" => [
+         %{
+           "code" => "MissingReportDocumentUrl",
+           "message" => "Report document metadata did not include a download URL"
+         }
+       ]
+     })}
   end
 
   @spec list_reports(Req.Request.t(), keyword()) ::

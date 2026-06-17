@@ -22,6 +22,12 @@ defmodule ReqAmazon.SpApi.NotificationsTest do
           Req.Test.json(conn, %{"payload" => %{"subscriptionId" => "sub-1"}})
 
         {"sellingpartnerapi-na.amazon.com",
+         "/notifications/v1/subscriptions/DATA_KIOSK_QUERY_PROCESSING_FINISHED/testNotification",
+         "POST"} ->
+          assert json_body(conn) == %{"destinationId" => "dest-1"}
+          Req.Test.json(conn, %{"payload" => %{"testNotificationId" => "test-1"}})
+
+        {"sellingpartnerapi-na.amazon.com",
          "/notifications/v1/subscriptions/DATA_KIOSK_QUERY_PROCESSING_FINISHED/sub%2F1", "GET"} ->
           Req.Test.json(conn, %{"payload" => %{"subscriptionId" => "sub/1"}})
 
@@ -41,6 +47,13 @@ defmodule ReqAmazon.SpApi.NotificationsTest do
                req,
                "DATA_KIOSK_QUERY_PROCESSING_FINISHED",
                subscription_payload
+             )
+
+    assert {:ok, %{"testNotificationId" => "test-1"}} =
+             Notifications.send_test_notification(
+               req,
+               "DATA_KIOSK_QUERY_PROCESSING_FINISHED",
+               %{"destinationId" => "dest-1"}
              )
 
     assert {:ok, %{"subscriptionId" => "sub/1"}} =

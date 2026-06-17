@@ -56,3 +56,12 @@ Audit date: April 21, 2026
 
 - Do a full Amazon-currentness audit for the non-priority API families listed in `docs/api_version_matrix.md`.
 - Apply the explicit side-by-side module split pattern to future breaking Amazon revs instead of growing mixed-version modules.
+
+## June 2026 Follow-Up
+
+- Compared `req_amazon` wrapper paths against Amazon's official `selling-partner-api-models` JSON definitions for the API families touched in this pass.
+- Split Listings Restrictions into `ReqAmazon.SpApi.ListingsRestrictions`.
+- Added Product Type Definitions linked-schema fetch helpers.
+- Added Reports document streaming helpers for temporary document URLs.
+- Added Notifications `payload_version:` support and `send_test_notification/3`.
+- Corrected modeled path/method mismatches in AWD labels, Invoices exports/documents/attributes, and Shipping additional-input schema/unmanifested shipment calls.

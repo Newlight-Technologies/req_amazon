@@ -168,9 +168,46 @@ ReqAmazon.SpApi.Reports.get_report_document(req, "report-document-id")
 
 `get_report_document/2` returns Amazon's report document metadata, including
 the temporary download URL. It does not download, persist, decompress, or parse
-the report body. Consumers should choose the payload handling strategy that
-matches the report type; large report documents should be streamed by the
-consuming application instead of loaded into memory as one binary.
+the report body. Use `stream_report_document/4` or `download_report_document/3`
+when you want `Req` streaming via the `:into` callback or collectable. Large
+report documents should be streamed instead of loaded into memory as one binary.
+
+```elixir
+ReqAmazon.SpApi.Reports.stream_report_document(
+  req,
+  "report-document-id",
+  fn {:data, chunk}, {req, response} ->
+    handle_chunk(chunk)
+    {:cont, {req, response}}
+  end
+)
+```
+
+Listings Restrictions:
+
+```elixir
+ReqAmazon.SpApi.ListingsRestrictions.get_listings_restrictions(
+  req,
+  asin: "B000123456",
+  seller_id: "SELLER1",
+  marketplace_ids: ["ATVPDKIKX0DER"],
+  product_type: "LUGGAGE"
+)
+```
+
+Product Type Definitions linked schemas:
+
+```elixir
+{:ok, definition} =
+  ReqAmazon.SpApi.ProductTypeDefinitions.get_definitions_product_type(
+    req,
+    "LUGGAGE",
+    marketplace_ids: ["ATVPDKIKX0DER"]
+  )
+
+ReqAmazon.SpApi.ProductTypeDefinitions.fetch_schema(definition)
+ReqAmazon.SpApi.ProductTypeDefinitions.fetch_meta_schema(definition)
+```
 
 Listings validation preview:
 
@@ -301,6 +338,12 @@ ReqAmazon.SpApi.Notifications.get_subscription(
   grantless_req,
   "DATA_KIOSK_QUERY_PROCESSING_FINISHED",
   payload_version: "2023-11-15"
+)
+
+ReqAmazon.SpApi.Notifications.send_test_notification(
+  grantless_req,
+  "DATA_KIOSK_QUERY_PROCESSING_FINISHED",
+  %{"destinationId" => "destination-id"}
 )
 ```
 

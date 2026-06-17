@@ -42,6 +42,7 @@ The remaining rows are a repo coverage inventory based on the version each modul
 | `ReqAmazon.SpApi.FulfillmentOutbound` | `lib/req_amazon/sp_api/fulfillment_outbound.ex` | `v2020-07-01` | Current wrapper |
 | `ReqAmazon.SpApi.Invoices` | `lib/req_amazon/sp_api/invoices.ex` | `v2024-06-19` | Current wrapper |
 | `ReqAmazon.SpApi.Listings` | `lib/req_amazon/sp_api/listings.ex` | `v2021-08-01` | Current wrapper, expanded in this pass |
+| `ReqAmazon.SpApi.ListingsRestrictions` | `lib/req_amazon/sp_api/listings_restrictions.ex` | `v2021-08-01` | Current canonical wrapper; `Listings.get_listings_restrictions/2` delegates for compatibility |
 | `ReqAmazon.SpApi.MerchantFulfillment` | `lib/req_amazon/sp_api/merchant_fulfillment.ex` | `v0` | Legacy wrapper |
 | `ReqAmazon.SpApi.Messaging` | `lib/req_amazon/sp_api/messaging.ex` | `v1` | Current wrapper |
 | `ReqAmazon.SpApi.Notifications` | `lib/req_amazon/sp_api/notifications.ex` | `v1` | Current wrapper, verified in tests in this pass; grantless usage documented |
