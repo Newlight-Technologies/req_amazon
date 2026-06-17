@@ -99,8 +99,21 @@ defmodule ReqAmazon.SpApi.Auth do
          body: %{"access_token" => access_token, "expires_in" => expires_in}
        }}
       when status in 200..299 ->
-        {:ok, access_token,
-         DateTime.add(DateTime.utc_now(), normalize_expires_in(expires_in), :second)}
+        case normalize_expires_in(expires_in) do
+          {:ok, seconds} ->
+            {:ok, access_token, DateTime.add(DateTime.utc_now(), seconds, :second)}
+
+          :error ->
+            {:error,
+             Error.from_response(status, %{
+               "errors" => [
+                 %{
+                   "code" => "InvalidTokenResponse",
+                   "message" => "Amazon LWA token response included invalid expires_in"
+                 }
+               ]
+             })}
+        end
 
       {:ok, %Req.Response{status: status, body: body}} ->
         {:error, Error.from_response(status, body)}
@@ -121,9 +134,14 @@ defmodule ReqAmazon.SpApi.Auth do
     end
   end
 
-  defp normalize_expires_in(expires_in) when is_integer(expires_in), do: expires_in
+  defp normalize_expires_in(expires_in) when is_integer(expires_in), do: {:ok, expires_in}
 
   defp normalize_expires_in(expires_in) when is_binary(expires_in) do
-    String.to_integer(expires_in)
+    case Integer.parse(expires_in) do
+      {seconds, ""} -> {:ok, seconds}
+      _invalid -> :error
+    end
   end
+
+  defp normalize_expires_in(_expires_in), do: :error
 end

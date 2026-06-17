@@ -121,7 +121,35 @@ defmodule ReqAmazonTest do
              })
   end
 
+  test "malformed token responses become ReqAmazon.SpApi.Error", %{credentials: credentials} do
+    Req.Test.stub(stub_name(), fn conn ->
+      case {conn.host, conn.request_path} do
+        {"api.amazon.com", "/auth/o2/token"} ->
+          Req.Test.json(conn, %{"access_token" => "lwa-token", "expires_in" => "soon"})
+
+        {"sellingpartnerapi-na.amazon.com", _path} ->
+          flunk("unexpected SP-API request after malformed token response")
+      end
+    end)
+
+    req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
+
+    assert {:error,
+            %Error{
+              status: 200,
+              errors: [%{"code" => "InvalidTokenResponse"} | _]
+            }} = Orders.get_order(req, "123-1234567-1234567")
+  end
+
   test "path_segment uses path encoding" do
     assert ReqAmazon.path_segment("a b/c") == "a%20b%2Fc"
+  end
+
+  test "put_csv_param omits empty optional lists" do
+    assert ReqAmazon.put_csv_param(%{}, "marketplaceIds", nil) == %{}
+    assert ReqAmazon.put_csv_param(%{}, "marketplaceIds", []) == %{}
+
+    assert ReqAmazon.put_csv_param(%{}, "marketplaceIds", ["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"]) ==
+             %{"marketplaceIds" => "ATVPDKIKX0DER,A2EUQ1WTGCTBG2"}
   end
 end

@@ -28,6 +28,7 @@ defmodule ReqAmazon do
   @doc false
   @spec put_csv_param(params_map(), String.t(), [term()] | nil) :: params_map()
   def put_csv_param(params, _name, nil), do: params
+  def put_csv_param(params, _name, []), do: params
 
   def put_csv_param(params, name, values) do
     Map.put(params, name, csv(values))
