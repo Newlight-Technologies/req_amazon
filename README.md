@@ -163,7 +163,14 @@ Reports:
 
 ```elixir
 ReqAmazon.SpApi.Reports.get_report(req, "report-id")
+ReqAmazon.SpApi.Reports.get_report_document(req, "report-document-id")
 ```
+
+`get_report_document/2` returns Amazon's report document metadata, including
+the temporary download URL. It does not download, persist, decompress, or parse
+the report body. Consumers should choose the payload handling strategy that
+matches the report type; large report documents should be streamed by the
+consuming application instead of loaded into memory as one binary.
 
 Listings validation preview:
 
@@ -290,6 +297,11 @@ grantless_req =
   )
 
 ReqAmazon.SpApi.Notifications.get_destinations(grantless_req)
+ReqAmazon.SpApi.Notifications.get_subscription(
+  grantless_req,
+  "DATA_KIOSK_QUERY_PROCESSING_FINISHED",
+  payload_version: "2023-11-15"
+)
 ```
 
 Sellers:

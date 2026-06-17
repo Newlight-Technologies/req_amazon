@@ -12,14 +12,19 @@ defmodule ReqAmazon.SpApi.Notifications do
 
   @base_path "/notifications/v1"
 
-  @spec get_subscription(Req.Request.t(), String.t()) ::
+  @spec get_subscription(Req.Request.t(), String.t(), keyword()) ::
           {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
-  def get_subscription(%Req.Request{} = req, notification_type)
-      when is_binary(notification_type) do
+  def get_subscription(%Req.Request{} = req, notification_type, opts \\ [])
+      when is_binary(notification_type) and is_list(opts) do
+    params =
+      %{}
+      |> put_param("payloadVersion", Keyword.get(opts, :payload_version))
+
     ReqAmazon.SpApi.request(
       req,
       :get,
-      "#{@base_path}/subscriptions/#{path_segment(notification_type)}"
+      "#{@base_path}/subscriptions/#{path_segment(notification_type)}",
+      params: params
     )
   end
 
