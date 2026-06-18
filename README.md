@@ -143,18 +143,14 @@ the raw `Req.Response`/decoded body rather than a `Response` struct.
 
 ### Caller-Managed Access Tokens
 
-If your application refreshes LWA tokens itself, pass the access token with `:access_token`:
+If your application refreshes LWA tokens itself, pass the access token with
+`:access_token`. With signing off (the default) no credentials are needed at all:
 
 ```elixir
 req =
   ReqAmazon.SpApi.Client.new(
-    base_url: "https://sellingpartnerapi-eu.amazon.com",
-    access_token: token,
-    credentials: %{
-      aws_access_key_id: System.fetch_env!("AMAZON_SP_API_AWS_ACCESS_KEY_ID"),
-      aws_secret_access_key: System.fetch_env!("AMAZON_SP_API_AWS_SECRET_ACCESS_KEY"),
-      aws_region: "eu-west-1"
-    }
+    region: :eu,
+    access_token: token
   )
 ```
 
@@ -171,10 +167,7 @@ req =
     grantless_scope: "sellingpartnerapi::notifications",
     credentials: %{
       client_id: System.fetch_env!("AMAZON_SP_API_CLIENT_ID"),
-      client_secret: System.fetch_env!("AMAZON_SP_API_CLIENT_SECRET"),
-      aws_access_key_id: System.fetch_env!("AMAZON_SP_API_AWS_ACCESS_KEY_ID"),
-      aws_secret_access_key: System.fetch_env!("AMAZON_SP_API_AWS_SECRET_ACCESS_KEY"),
-      aws_region: "us-east-1"
+      client_secret: System.fetch_env!("AMAZON_SP_API_CLIENT_SECRET")
     }
   )
 
@@ -197,11 +190,12 @@ req =
 
 Per Amazon's SP-API endpoint documentation, the standard regional hosts are:
 
-- North America: `https://sellingpartnerapi-na.amazon.com` with AWS region `us-east-1`
-- Europe: `https://sellingpartnerapi-eu.amazon.com` with AWS region `eu-west-1`
-- Far East: `https://sellingpartnerapi-fe.amazon.com` with AWS region `us-west-2`
+- North America (`:na`): `https://sellingpartnerapi-na.amazon.com`, AWS region `us-east-1`
+- Europe (`:eu`): `https://sellingpartnerapi-eu.amazon.com`, AWS region `eu-west-1`
+- Far East (`:fe`): `https://sellingpartnerapi-fe.amazon.com`, AWS region `us-west-2`
 
-Override both the request `base_url` and the signing `aws_region` together when you target a different region.
+Pass `region:` to `Client.new/1` and both the endpoint and (when signing) the
+`aws_region` are resolved from this table. `:endpoint`/`:aws_region` override it.
 
 ## Wrapper Conventions
 
@@ -404,10 +398,7 @@ grantless_req =
     grantless_scope: "sellingpartnerapi::notifications",
     credentials: %{
       client_id: System.fetch_env!("AMAZON_SP_API_CLIENT_ID"),
-      client_secret: System.fetch_env!("AMAZON_SP_API_CLIENT_SECRET"),
-      aws_access_key_id: System.fetch_env!("AMAZON_SP_API_AWS_ACCESS_KEY_ID"),
-      aws_secret_access_key: System.fetch_env!("AMAZON_SP_API_AWS_SECRET_ACCESS_KEY"),
-      aws_region: "us-east-1"
+      client_secret: System.fetch_env!("AMAZON_SP_API_CLIENT_SECRET")
     }
   )
 

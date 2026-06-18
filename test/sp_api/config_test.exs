@@ -34,4 +34,19 @@ defmodule ReqAmazon.SpApi.ConfigTest do
     config = Config.new(region: :na)
     assert Config.resolve(config) == config
   end
+
+  test "Client.new/1 accepts an explicit :config struct" do
+    config = Config.new(region: :eu)
+    req = ReqAmazon.SpApi.Client.new(config: config, access_token: "t")
+
+    assert req.options[:base_url] == "https://sellingpartnerapi-eu.amazon.com"
+    assert req.options[:config] == config
+  end
+
+  test "Client.new/1 accepts :config as a keyword list" do
+    req = ReqAmazon.SpApi.Client.new(config: [region: :fe], access_token: "t")
+
+    assert req.options[:base_url] == "https://sellingpartnerapi-fe.amazon.com"
+    assert %Config{region: :fe} = req.options[:config]
+  end
 end

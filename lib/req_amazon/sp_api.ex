@@ -38,10 +38,8 @@ defmodule ReqAmazon.SpApi do
   alias ReqAmazon.SpApi.{Config, Error, Headers, Response}
   alias ReqAmazon.SpApi.Token
 
-  @default_endpoint "https://sellingpartnerapi-na.amazon.com"
   @default_marketplace_id "ATVPDKIKX0DER"
   @default_region "us-east-1"
-  @default_token_url "https://api.amazon.com/auth/o2/token"
   @plugin_options [:access_token, :config, :credentials, :grantless_scope]
   @forward_request_option_keys [
     :adapter,
@@ -194,27 +192,9 @@ defmodule ReqAmazon.SpApi do
   end
 
   @doc false
-  @spec endpoint() :: String.t()
-  def endpoint do
-    Application.get_env(:req_amazon, :sp_api_endpoint, @default_endpoint)
-  end
-
-  @doc false
   @spec marketplace_id() :: String.t()
   def marketplace_id do
     Application.get_env(:req_amazon, :sp_api_marketplace_id, @default_marketplace_id)
-  end
-
-  @doc false
-  @spec token_url() :: String.t()
-  def token_url do
-    Application.get_env(:req_amazon, :sp_api_token_url, @default_token_url)
-  end
-
-  @doc false
-  @spec user_agent() :: String.t()
-  def user_agent do
-    Application.get_env(:req_amazon, :sp_api_user_agent, default_user_agent())
   end
 
   @doc false
@@ -390,14 +370,5 @@ defmodule ReqAmazon.SpApi do
       {:ok, value} -> value
       :error -> Map.get(credentials, Atom.to_string(key))
     end
-  end
-
-  defp default_user_agent do
-    version =
-      :req_amazon
-      |> Application.spec(:vsn)
-      |> to_string()
-
-    "req_amazon/#{version} (Elixir/#{System.version()})"
   end
 end

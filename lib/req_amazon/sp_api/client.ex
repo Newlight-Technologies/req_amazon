@@ -26,10 +26,17 @@ defmodule ReqAmazon.SpApi.Client do
   """
   @spec new(keyword()) :: Req.Request.t()
   def new(overrides \\ []) when is_list(overrides) do
+    {config_override, overrides} = Keyword.pop(overrides, :config)
     {config_options, rest} = Keyword.split(overrides, @config_option_keys)
     {plugin_options, request_options} = Keyword.split(rest, @plugin_option_keys)
 
-    config = Config.new(config_options)
+    # An explicit `:config` (struct or keyword) wins; the discrete options
+    # (`:region`, `:sign?`, ...) are the convenience path.
+    config =
+      case config_override do
+        nil -> Config.new(config_options)
+        other -> Config.resolve(other)
+      end
 
     Req.new(base_url: config.endpoint, retry: :transient)
     |> Req.merge(request_options)

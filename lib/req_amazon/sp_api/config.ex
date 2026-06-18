@@ -28,9 +28,9 @@ defmodule ReqAmazon.SpApi.Config do
   credentials it needs) is opt-in.
   """
 
-  alias ReqAmazon.SpApi
-
   @default_aws_region "us-east-1"
+  @default_endpoint "https://sellingpartnerapi-na.amazon.com"
+  @default_token_url "https://api.amazon.com/auth/o2/token"
 
   @regions %{
     na: %{endpoint: "https://sellingpartnerapi-na.amazon.com", aws_region: "us-east-1"},
@@ -72,13 +72,19 @@ defmodule ReqAmazon.SpApi.Config do
 
     %__MODULE__{
       region: Keyword.get(opts, :region),
-      endpoint: Keyword.get(opts, :endpoint) || (info && info.endpoint) || SpApi.endpoint(),
+      endpoint: Keyword.get(opts, :endpoint) || (info && info.endpoint) || default_endpoint(),
       aws_region:
         Keyword.get(opts, :aws_region) || (info && info.aws_region) || @default_aws_region,
-      user_agent: Keyword.get(opts, :user_agent) || SpApi.user_agent(),
+      user_agent: Keyword.get(opts, :user_agent) || default_user_agent(),
       sign?: Keyword.get(opts, :sign?, false),
       sandbox?: Keyword.get(opts, :sandbox, false)
     }
+  end
+
+  @doc "The LWA token endpoint (`:sp_api_token_url` config, or Amazon's default)."
+  @spec token_url() :: String.t()
+  def token_url do
+    Application.get_env(:req_amazon, :sp_api_token_url, @default_token_url)
   end
 
   @doc false
@@ -93,5 +99,18 @@ defmodule ReqAmazon.SpApi.Config do
     region(region) ||
       raise ArgumentError,
             "unknown SP-API region #{inspect(region)}; expected one of #{inspect(Map.keys(@regions))}"
+  end
+
+  defp default_endpoint do
+    Application.get_env(:req_amazon, :sp_api_endpoint, @default_endpoint)
+  end
+
+  defp default_user_agent do
+    Application.get_env(:req_amazon, :sp_api_user_agent, library_user_agent())
+  end
+
+  defp library_user_agent do
+    version = :req_amazon |> Application.spec(:vsn) |> to_string()
+    "req_amazon/#{version} (Elixir/#{System.version()})"
   end
 end
