@@ -33,22 +33,6 @@ defmodule ReqAmazon.SpApi.Awd do
     )
   end
 
-  @spec list_inbound_orders(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
-  def list_inbound_orders(%Req.Request{} = req, opts \\ []) when is_list(opts) do
-    params =
-      %{}
-      |> put_param("sortBy", Keyword.get(opts, :sort_by))
-      |> put_param("sortOrder", Keyword.get(opts, :sort_order))
-      |> put_param("orderStatus", Keyword.get(opts, :order_status))
-      |> put_param("updatedAfter", Keyword.get(opts, :updated_after))
-      |> put_param("updatedBefore", Keyword.get(opts, :updated_before))
-      |> put_param("maxResults", Keyword.get(opts, :max_results))
-      |> put_param("nextToken", Keyword.get(opts, :next_token))
-
-    ReqAmazon.SpApi.request(req, :get, "#{@base_path}/inboundOrders", params: params)
-  end
-
   @spec create_inbound_order(Req.Request.t(), map()) ::
           {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
   def create_inbound_order(%Req.Request{} = req, payload) when is_map(payload) do
@@ -97,13 +81,31 @@ defmodule ReqAmazon.SpApi.Awd do
     )
   end
 
-  @spec get_labels(Req.Request.t(), String.t()) ::
+  @spec get_inbound_shipment_labels(Req.Request.t(), String.t(), keyword()) ::
           {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
-  def get_labels(%Req.Request{} = req, order_id) when is_binary(order_id) do
+  def get_inbound_shipment_labels(%Req.Request{} = req, shipment_id, opts \\ [])
+      when is_binary(shipment_id) and is_list(opts) do
+    params =
+      %{}
+      |> put_param("pageType", Keyword.get(opts, :page_type))
+      |> put_param("formatType", Keyword.get(opts, :format_type))
+
     ReqAmazon.SpApi.request(
       req,
       :get,
-      "#{@base_path}/inboundOrders/#{path_segment(order_id)}/labels"
+      "#{@base_path}/inboundShipments/#{path_segment(shipment_id)}/labels",
+      params: params
+    )
+  end
+
+  @spec get_inbound_shipment_label_page_types(Req.Request.t(), String.t()) ::
+          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+  def get_inbound_shipment_label_page_types(%Req.Request{} = req, shipment_id)
+      when is_binary(shipment_id) do
+    ReqAmazon.SpApi.request(
+      req,
+      :get,
+      "#{@base_path}/inboundShipments/#{path_segment(shipment_id)}/labelPageTypes"
     )
   end
 

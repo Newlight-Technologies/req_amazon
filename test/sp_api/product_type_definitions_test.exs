@@ -77,4 +77,37 @@ defmodule ReqAmazon.SpApi.ProductTypeDefinitionsTest do
                marketplace_ids: ["ATVPDKIKX0DER"]
              )
   end
+
+  test "fetch_schema and fetch_meta_schema retrieve linked resources" do
+    Req.Test.stub(stub_name(), fn conn ->
+      case {conn.host, conn.request_path} do
+        {"schemas.amazon.test", "/schema.json"} ->
+          Req.Test.json(conn, %{"type" => "object"})
+
+        {"schemas.amazon.test", "/meta-schema.json"} ->
+          Req.Test.json(conn, %{"$schema" => "https://json-schema.org/draft/2019-09/schema"})
+      end
+    end)
+
+    definition = %{
+      "schema" => %{"link" => %{"resource" => "https://schemas.amazon.test/schema.json"}},
+      "metaSchema" => %{
+        "link" => %{"resource" => "https://schemas.amazon.test/meta-schema.json"}
+      }
+    }
+
+    assert {:ok, %{"type" => "object"}} =
+             ProductTypeDefinitions.fetch_schema(definition, plug: {Req.Test, stub_name()})
+
+    assert {:ok, %{"$schema" => "https://json-schema.org/draft/2019-09/schema"}} =
+             ProductTypeDefinitions.fetch_meta_schema(definition, plug: {Req.Test, stub_name()})
+  end
+
+  test "fetch_schema reports missing schema links" do
+    assert {:error,
+            %Error{
+              status: nil,
+              errors: [%{"code" => "MissingSchemaLink"} | _]
+            }} = ProductTypeDefinitions.fetch_schema(%{})
+  end
 end

@@ -13,12 +13,19 @@ defmodule ReqAmazon.SpApi.NotificationsTest do
       case {conn.host, conn.request_path, conn.method} do
         {"sellingpartnerapi-na.amazon.com",
          "/notifications/v1/subscriptions/DATA_KIOSK_QUERY_PROCESSING_FINISHED", "GET"} ->
+          assert query_params(conn) == %{}
           Req.Test.json(conn, %{"payload" => %{"subscriptionId" => "sub-1"}})
 
         {"sellingpartnerapi-na.amazon.com",
          "/notifications/v1/subscriptions/DATA_KIOSK_QUERY_PROCESSING_FINISHED", "POST"} ->
           assert json_body(conn) == subscription_payload
           Req.Test.json(conn, %{"payload" => %{"subscriptionId" => "sub-1"}})
+
+        {"sellingpartnerapi-na.amazon.com",
+         "/notifications/v1/subscriptions/DATA_KIOSK_QUERY_PROCESSING_FINISHED/testNotification",
+         "POST"} ->
+          assert json_body(conn) == %{"destinationId" => "dest-1"}
+          Req.Test.json(conn, %{"payload" => %{"testNotificationId" => "test-1"}})
 
         {"sellingpartnerapi-na.amazon.com",
          "/notifications/v1/subscriptions/DATA_KIOSK_QUERY_PROCESSING_FINISHED/sub%2F1", "GET"} ->
@@ -42,6 +49,13 @@ defmodule ReqAmazon.SpApi.NotificationsTest do
                subscription_payload
              )
 
+    assert {:ok, %{"testNotificationId" => "test-1"}} =
+             Notifications.send_test_notification(
+               req,
+               "DATA_KIOSK_QUERY_PROCESSING_FINISHED",
+               %{"destinationId" => "dest-1"}
+             )
+
     assert {:ok, %{"subscriptionId" => "sub/1"}} =
              Notifications.get_subscription_by_id(
                req,
@@ -54,6 +68,25 @@ defmodule ReqAmazon.SpApi.NotificationsTest do
                req,
                "DATA_KIOSK_QUERY_PROCESSING_FINISHED",
                "sub/1"
+             )
+  end
+
+  test "get_subscription can target a payload version", %{credentials: credentials} do
+    stub_with_token(fn conn ->
+      {"sellingpartnerapi-na.amazon.com",
+       "/notifications/v1/subscriptions/DATA_KIOSK_QUERY_PROCESSING_FINISHED", "GET"} =
+        {conn.host, conn.request_path, conn.method}
+
+      assert query_params(conn) == %{"payloadVersion" => "2023-11-15"}
+
+      Req.Test.json(conn, %{"payload" => %{"subscriptionId" => "sub-1"}})
+    end)
+
+    req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
+
+    assert {:ok, %{"subscriptionId" => "sub-1"}} =
+             Notifications.get_subscription(req, "DATA_KIOSK_QUERY_PROCESSING_FINISHED",
+               payload_version: "2023-11-15"
              )
   end
 
