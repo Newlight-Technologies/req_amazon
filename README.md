@@ -42,8 +42,14 @@ Optional application config:
 config :req_amazon,
   sp_api_endpoint: "https://sellingpartnerapi-na.amazon.com",
   sp_api_token_url: "https://api.amazon.com/auth/o2/token",
-  sp_api_user_agent: "my_app/1.0.0 (Elixir)"
+  sp_api_user_agent: "my_app/1.0.0 (Elixir)",
+  # Override how LWA tokens are minted (default: ReqAmazon.SpApi.Token.Lwa).
+  token_provider: MyApp.TokenProvider
 ```
+
+Access tokens are cached and refreshed automatically. Concurrent requests for the
+same credentials share a single in-flight refresh (single-flight), so a fleet of
+workers never stampedes Amazon's token endpoint.
 
 If your application already manages LWA refresh and wants to pass a caller-managed access token, only the AWS signing credentials are required:
 
@@ -144,9 +150,31 @@ req =
   )
 ```
 
-This same pattern also applies to SP-API operations that Amazon models as
-grantless. Acquire the correct access token in your application, then pass it
-through `:access_token` for the request.
+### Grantless Operations
+
+Some SP-API operations (e.g. Notifications, some Data Kiosk calls) are
+*grantless* — they authorize with a `client_credentials` token scoped to a role
+rather than a seller's refresh token. Pass `:grantless_scope` and the library
+mints, caches, and reuses the token for you:
+
+```elixir
+req =
+  ReqAmazon.SpApi.Client.new(
+    grantless_scope: "sellingpartnerapi::notifications",
+    credentials: %{
+      client_id: System.fetch_env!("AMAZON_SP_API_CLIENT_ID"),
+      client_secret: System.fetch_env!("AMAZON_SP_API_CLIENT_SECRET"),
+      aws_access_key_id: System.fetch_env!("AMAZON_SP_API_AWS_ACCESS_KEY_ID"),
+      aws_secret_access_key: System.fetch_env!("AMAZON_SP_API_AWS_SECRET_ACCESS_KEY"),
+      aws_region: "us-east-1"
+    }
+  )
+
+ReqAmazon.SpApi.Notifications.get_destinations(req)
+```
+
+Grantless clients do not need a `:refresh_token`. If you already manage tokens
+yourself, you can still pass `:access_token` directly instead.
 
 You can also inject the header yourself before calling `attach/2`:
 
@@ -365,8 +393,10 @@ Notifications:
 ```elixir
 grantless_req =
   ReqAmazon.SpApi.Client.new(
-    access_token: grantless_token,
+    grantless_scope: "sellingpartnerapi::notifications",
     credentials: %{
+      client_id: System.fetch_env!("AMAZON_SP_API_CLIENT_ID"),
+      client_secret: System.fetch_env!("AMAZON_SP_API_CLIENT_SECRET"),
       aws_access_key_id: System.fetch_env!("AMAZON_SP_API_AWS_ACCESS_KEY_ID"),
       aws_secret_access_key: System.fetch_env!("AMAZON_SP_API_AWS_SECRET_ACCESS_KEY"),
       aws_region: "us-east-1"
