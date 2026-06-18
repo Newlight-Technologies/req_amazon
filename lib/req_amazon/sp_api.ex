@@ -35,7 +35,7 @@ defmodule ReqAmazon.SpApi do
         )
   """
 
-  alias ReqAmazon.SpApi.{Config, Error, Headers, Response}
+  alias ReqAmazon.SpApi.{Config, Error, Headers, RateLimit, Response}
   alias ReqAmazon.SpApi.Token
 
   @default_marketplace_id "ATVPDKIKX0DER"
@@ -97,6 +97,7 @@ defmodule ReqAmazon.SpApi do
     |> ensure_config()
     |> ensure_credentials()
     |> ensure_aws_sigv4()
+    |> Req.Request.merge_new_options(retry: &RateLimit.retry/2)
     |> Req.Request.prepend_request_steps(
       sp_api_sandbox_url: &sp_api_sandbox_url/1,
       sp_api_lwa_token: &sp_api_lwa_token/1,
@@ -110,13 +111,48 @@ defmodule ReqAmazon.SpApi do
           {:ok, Response.t()} | {:error, Error.t()}
   def request(%Req.Request{} = request, method, path, options \\ [])
       when is_atom(method) and is_binary(path) and is_list(options) do
-    case Req.request(request, Keyword.merge([method: method, url: path], options)) do
-      {:ok, %Req.Response{} = response} ->
-        {:ok, Response.from_req(response)}
+    metadata = %{method: method, path: path}
+    start = System.monotonic_time()
 
-      {:error, error} ->
-        {:error, Error.wrap(error)}
-    end
+    :telemetry.execute(
+      [:req_amazon, :request, :start],
+      %{system_time: System.system_time()},
+      metadata
+    )
+
+    {event, meta, result} =
+      case Req.request(request, Keyword.merge([method: method, url: path], options)) do
+        {:ok, %Req.Response{} = response} ->
+          response = Response.from_req(response)
+
+          {:stop,
+           Map.merge(metadata, %{
+             status: response.status,
+             rate_limit: response.rate_limit,
+             request_id: response.request_id
+           }), {:ok, response}}
+
+        {:error, error} ->
+          error = Error.wrap(error)
+          # A non-nil status means Amazon returned an HTTP response (just not 2xx);
+          # a nil status means the request never completed (transport/timeout).
+          event = if error.status, do: :stop, else: :exception
+
+          {event,
+           Map.merge(metadata, %{
+             status: error.status,
+             request_id: error.request_id,
+             error: error
+           }), {:error, error}}
+      end
+
+    :telemetry.execute(
+      [:req_amazon, :request, event],
+      %{duration: System.monotonic_time() - start},
+      meta
+    )
+
+    result
   end
 
   @doc false

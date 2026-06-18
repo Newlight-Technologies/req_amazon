@@ -24,6 +24,7 @@ defmodule ReqAmazon.MixProject do
     [
       {:jason, "~> 1.4"},
       {:req, "~> 0.5"},
+      {:telemetry, "~> 1.0"},
       {:plug, "~> 1.15", only: :test}
     ]
   end

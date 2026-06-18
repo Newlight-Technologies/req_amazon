@@ -38,7 +38,7 @@ defmodule ReqAmazon.SpApi.Client do
         other -> Config.resolve(other)
       end
 
-    Req.new(base_url: config.endpoint, retry: :transient)
+    Req.new(base_url: config.endpoint)
     |> Req.merge(request_options)
     |> ReqAmazon.SpApi.attach([{:config, config} | plugin_options])
   end

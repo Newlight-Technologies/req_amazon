@@ -141,6 +141,33 @@ The streaming download helpers (`Reports.stream_report_document/4`,
 linked-schema fetchers operate on temporary, non-SP-API URLs and therefore return
 the raw `Req.Response`/decoded body rather than a `Response` struct.
 
+### Rate Limiting And Retries
+
+Requests use a rate-limit-aware `:retry` policy by default. It behaves like Req's
+`:transient` (retrying `408/429/500/502/503/504` and transient transport errors)
+with one SP-API-specific addition: SP-API reports per-operation throttling via the
+`x-amzn-RateLimit-Limit` header (the token-bucket refill rate) rather than
+`Retry-After`. On a throttled `429` it waits roughly one token refill (`1 / rate`
+seconds, capped at 30s) instead of generic exponential backoff. A `429`/`503` that
+*does* include `Retry-After` is honored. Pass your own `:retry` to override.
+
+### Telemetry
+
+Each SP-API operation emits a span:
+
+- `[:req_amazon, :request, :start]` — measurements `%{system_time: ...}`
+- `[:req_amazon, :request, :stop]` — measurements `%{duration: native}`; metadata
+  includes `:status`, `:rate_limit`, `:request_id`
+- `[:req_amazon, :request, :exception]` — when the request never completed
+  (transport/timeout)
+
+All events carry `%{method: method, path: path}`. Attach a handler to feed your
+metrics/throttling dashboards:
+
+```elixir
+:telemetry.attach("req-amazon", [:req_amazon, :request, :stop], &MyApp.Metrics.handle/4, nil)
+```
+
 ### Caller-Managed Access Tokens
 
 If your application refreshes LWA tokens itself, pass the access token with
