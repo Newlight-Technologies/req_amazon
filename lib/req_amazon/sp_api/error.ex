@@ -43,6 +43,7 @@ defmodule ReqAmazon.SpApi.Error do
     }
   end
 
+  @doc false
   @spec wrap(term()) :: t()
   def wrap(%__MODULE__{} = error), do: error
 

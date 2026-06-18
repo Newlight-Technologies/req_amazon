@@ -32,8 +32,8 @@ defmodule ReqAmazon.SpApi.Headers do
 
   defp parse_float(value) when is_binary(value) do
     case Float.parse(value) do
-      {rate, _rest} -> rate
-      :error -> nil
+      {rate, ""} -> rate
+      _invalid -> nil
     end
   end
 

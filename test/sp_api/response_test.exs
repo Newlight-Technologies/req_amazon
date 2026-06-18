@@ -14,6 +14,10 @@ defmodule ReqAmazon.SpApi.ResponseTest do
                "tok"
     end
 
+    test "accepts pagination.paginationToken as a fallback" do
+      assert Pagination.next_token(%{"pagination" => %{"paginationToken" => "pt"}}) == "pt"
+    end
+
     test "finds top-level nextToken (Reports)" do
       assert Pagination.next_token(%{"reports" => [], "nextToken" => "r"}) == "r"
     end

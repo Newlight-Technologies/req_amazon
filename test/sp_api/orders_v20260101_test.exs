@@ -22,7 +22,7 @@ defmodule ReqAmazon.SpApi.OrdersV20260101Test do
 
       Req.Test.json(conn, %{
         "orders" => [%{"orderId" => "123-1234567-1234567"}],
-        "pagination" => %{}
+        "pagination" => %{"nextToken" => "page-2"}
       })
     end)
 
@@ -30,7 +30,11 @@ defmodule ReqAmazon.SpApi.OrdersV20260101Test do
 
     assert {:ok,
             %Response{
-              body: %{"orders" => [%{"orderId" => "123-1234567-1234567"}], "pagination" => %{}}
+              body: %{
+                "orders" => [%{"orderId" => "123-1234567-1234567"}],
+                "pagination" => %{"nextToken" => "page-2"}
+              },
+              next_token: "page-2"
             }} =
              OrdersV20260101.list_orders(req,
                created_after: "2026-03-01T00:00:00Z",

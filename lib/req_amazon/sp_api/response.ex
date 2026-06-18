@@ -33,12 +33,14 @@ defmodule ReqAmazon.SpApi.Response do
 
   @doc false
   @spec from_req(Req.Response.t()) :: t()
-  def from_req(%Req.Response{status: status, body: body, headers: headers} = response) do
+  def from_req(%Req.Response{status: status, body: raw_body, headers: headers} = response) do
+    # `next_token` is read from the raw envelope, before the `payload` wrapper is
+    # stripped, because FBA Inventory nests `pagination` beside `payload`.
     %__MODULE__{
-      body: ReqAmazon.unwrap_payload(body),
+      body: ReqAmazon.unwrap_payload(raw_body),
       status: status,
       headers: headers,
-      next_token: Pagination.next_token(body),
+      next_token: Pagination.next_token(raw_body),
       rate_limit: Headers.rate_limit(response),
       request_id: Headers.request_id(response)
     }

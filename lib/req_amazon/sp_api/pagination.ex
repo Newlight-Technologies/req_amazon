@@ -14,8 +14,13 @@ defmodule ReqAmazon.SpApi.Pagination do
 
   # Checked in order. The `pagination` object wins over a bare token because
   # FBA Inventory carries both `payload` and a sibling `pagination`.
+  # `paginationToken` is the request-side parameter name on the newer APIs
+  # (Data Kiosk, Fulfillment Inbound v2024, Orders v2026); their responses use
+  # `pagination.nextToken`, but we accept `pagination.paginationToken` as a
+  # defensive fallback so a symmetric response shape still paginates.
   @token_paths [
     ["pagination", "nextToken"],
+    ["pagination", "paginationToken"],
     ["Pagination", "NextToken"],
     ["nextToken"],
     ["NextToken"],
