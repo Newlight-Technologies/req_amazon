@@ -12,6 +12,6 @@ defmodule ReqAmazon.SpApi.FinancesV2 do
   @doc false
   @deprecated "Use ReqAmazon.SpApi.FinancesV20240619.list_transactions/2 instead."
   @spec list_transactions(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   defdelegate list_transactions(req, opts), to: FinancesV20240619
 end

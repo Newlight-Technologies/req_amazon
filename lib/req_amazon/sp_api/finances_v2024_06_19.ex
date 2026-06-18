@@ -8,7 +8,7 @@ defmodule ReqAmazon.SpApi.FinancesV20240619 do
   @base_path "/finances/2024-06-19"
 
   @spec list_transactions(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def list_transactions(%Req.Request{} = req, opts) when is_list(opts) do
     posted_after = Keyword.fetch!(opts, :posted_after)
 

@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.FbaInventoryTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, FbaInventory}
+  alias ReqAmazon.SpApi.{Response, Client, FbaInventory}
 
   test "get_inventory_summaries sets marketplace granularity fields", %{credentials: credentials} do
     stub_with_token(fn conn ->
@@ -19,7 +19,7 @@ defmodule ReqAmazon.SpApi.FbaInventoryTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"inventorySummaries" => [], "pagination" => %{}}} =
+    assert {:ok, %Response{body: %{"inventorySummaries" => [], "pagination" => %{}}}} =
              FbaInventory.get_inventory_summaries(req, "ATVPDKIKX0DER",
                skus: ["SKU-1", "SKU-2"],
                details: true
@@ -39,7 +39,7 @@ defmodule ReqAmazon.SpApi.FbaInventoryTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"inventorySummaries" => [], "pagination" => %{}}} =
+    assert {:ok, %Response{body: %{"inventorySummaries" => [], "pagination" => %{}}}} =
              FbaInventory.get_inventory_summaries(req, "ATVPDKIKX0DER")
   end
 end

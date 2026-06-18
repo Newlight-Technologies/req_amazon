@@ -6,7 +6,7 @@ defmodule ReqAmazon.SpApi.Vendor.TransactionStatus do
   import ReqAmazon
 
   @spec get_transaction(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_transaction(%Req.Request{} = req, transaction_id) when is_binary(transaction_id) do
     ReqAmazon.SpApi.request(
       req,

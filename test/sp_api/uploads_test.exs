@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.UploadsTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, Error, Uploads}
+  alias ReqAmazon.SpApi.{Client, Error, Response, Uploads}
 
   test "create_upload_destination_for_resource maps params and escapes resource paths", %{
     credentials: credentials
@@ -27,9 +27,11 @@ defmodule ReqAmazon.SpApi.UploadsTest do
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
     assert {:ok,
-            %{
-              "uploadDestinationId" => "dest-1",
-              "url" => "https://aplus-media.example.test/upload"
+            %Response{
+              body: %{
+                "uploadDestinationId" => "dest-1",
+                "url" => "https://aplus-media.example.test/upload"
+              }
             }} =
              Uploads.create_upload_destination_for_resource(
                req,

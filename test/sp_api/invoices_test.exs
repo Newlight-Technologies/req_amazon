@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.InvoicesTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, Invoices}
+  alias ReqAmazon.SpApi.{Response, Client, Invoices}
 
   test "invoice attributes and documents use modeled paths", %{credentials: credentials} do
     stub_with_token(fn conn ->
@@ -18,10 +18,10 @@ defmodule ReqAmazon.SpApi.InvoicesTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"attributes" => []}} =
+    assert {:ok, %Response{body: %{"attributes" => []}}} =
              Invoices.get_invoices_attributes(req, marketplace_id: "ATVPDKIKX0DER")
 
-    assert {:ok, %{"url" => "https://example.test/invoice.pdf"}} =
+    assert {:ok, %Response{body: %{"url" => "https://example.test/invoice.pdf"}}} =
              Invoices.get_invoices_document(req, "doc/1")
   end
 
@@ -51,9 +51,10 @@ defmodule ReqAmazon.SpApi.InvoicesTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"exportId" => "export-1"}} = Invoices.create_invoices_export(req, payload)
+    assert {:ok, %Response{body: %{"exportId" => "export-1"}}} =
+             Invoices.create_invoices_export(req, payload)
 
-    assert {:ok, %{"exports" => []}} =
+    assert {:ok, %Response{body: %{"exports" => []}}} =
              Invoices.get_invoices_exports(req,
                marketplace_id: "ATVPDKIKX0DER",
                date_start: "2026-06-01T00:00:00Z",
@@ -63,6 +64,7 @@ defmodule ReqAmazon.SpApi.InvoicesTest do
                next_token: "next-1"
              )
 
-    assert {:ok, %{"exportId" => "export-1"}} = Invoices.get_invoices_export(req, "export-1")
+    assert {:ok, %Response{body: %{"exportId" => "export-1"}}} =
+             Invoices.get_invoices_export(req, "export-1")
   end
 end

@@ -16,19 +16,19 @@ defmodule ReqAmazon.SpApi.OrdersV20260101 do
   @base_path "/orders/2026-01-01"
 
   @spec search_orders(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def search_orders(%Req.Request{} = req, opts) when is_list(opts) do
     ReqAmazon.SpApi.request(req, :get, "#{@base_path}/orders", params: search_params(opts))
   end
 
   @spec list_orders(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def list_orders(%Req.Request{} = req, opts) when is_list(opts) do
     search_orders(req, opts)
   end
 
   @spec get_order(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_order(%Req.Request{} = req, order_id, opts \\ [])
       when is_binary(order_id) and is_list(opts) do
     params =
@@ -44,28 +44,28 @@ defmodule ReqAmazon.SpApi.OrdersV20260101 do
   end
 
   @spec get_order_items(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_order_items(%Req.Request{} = req, order_id, opts \\ [])
       when is_binary(order_id) and is_list(opts) do
     get_order(req, order_id, opts)
   end
 
   @spec get_order_buyer_info(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_order_buyer_info(%Req.Request{} = req, order_id, opts \\ [])
       when is_binary(order_id) and is_list(opts) do
     get_order(req, order_id, with_included_data(opts, ["BUYER"]))
   end
 
   @spec get_order_address(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_order_address(%Req.Request{} = req, order_id, opts \\ [])
       when is_binary(order_id) and is_list(opts) do
     get_order(req, order_id, with_included_data(opts, ["RECIPIENT"]))
   end
 
   @spec get_order_items_buyer_info(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_order_items_buyer_info(%Req.Request{} = req, order_id, opts \\ [])
       when is_binary(order_id) and is_list(opts) do
     get_order(req, order_id, with_included_data(opts, ["BUYER"]))

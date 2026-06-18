@@ -6,7 +6,7 @@ defmodule ReqAmazon.SpApi.FbaInventory do
   import ReqAmazon
 
   @spec get_inventory_summaries(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_inventory_summaries(%Req.Request{} = req, marketplace_id, opts \\ [])
       when is_binary(marketplace_id) and is_list(opts) do
     params =

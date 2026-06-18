@@ -6,7 +6,7 @@ defmodule ReqAmazon.SpApi.Vehicles do
   import ReqAmazon
 
   @spec search_vehicles(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def search_vehicles(%Req.Request{} = req, opts) when is_list(opts) do
     marketplace_ids = Keyword.fetch!(opts, :marketplace_ids)
 

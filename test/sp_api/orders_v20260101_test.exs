@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.OrdersV20260101Test do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, Error, OrdersV20260101}
+  alias ReqAmazon.SpApi.{Response, Client, Error, OrdersV20260101}
 
   test "search_orders maps current query params and list_orders delegates to it", %{
     credentials: credentials
@@ -22,13 +22,20 @@ defmodule ReqAmazon.SpApi.OrdersV20260101Test do
 
       Req.Test.json(conn, %{
         "orders" => [%{"orderId" => "123-1234567-1234567"}],
-        "pagination" => %{}
+        "pagination" => %{"nextToken" => "page-2"}
       })
     end)
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"orders" => [%{"orderId" => "123-1234567-1234567"}], "pagination" => %{}}} =
+    assert {:ok,
+            %Response{
+              body: %{
+                "orders" => [%{"orderId" => "123-1234567-1234567"}],
+                "pagination" => %{"nextToken" => "page-2"}
+              },
+              next_token: "page-2"
+            }} =
              OrdersV20260101.list_orders(req,
                created_after: "2026-03-01T00:00:00Z",
                created_before: "2026-03-07T00:00:00Z",
@@ -54,7 +61,8 @@ defmodule ReqAmazon.SpApi.OrdersV20260101Test do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"orderId" => "123/456", "orderItems" => [%{"orderItemId" => "1"}]}} =
+    assert {:ok,
+            %Response{body: %{"orderId" => "123/456", "orderItems" => [%{"orderItemId" => "1"}]}}} =
              OrdersV20260101.get_order_items_buyer_info(req, "123/456",
                included_data: ["FULFILLMENT"]
              )
@@ -71,7 +79,7 @@ defmodule ReqAmazon.SpApi.OrdersV20260101Test do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"orderId" => "123-1234567-1234567", "recipient" => %{}}} =
+    assert {:ok, %Response{body: %{"orderId" => "123-1234567-1234567", "recipient" => %{}}}} =
              OrdersV20260101.get_order_address(req, "123-1234567-1234567")
   end
 

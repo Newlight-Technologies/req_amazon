@@ -4,30 +4,30 @@ defmodule ReqAmazon.SpApi.Reports do
   """
 
   import ReqAmazon
-  alias ReqAmazon.SpApi.Error
+  alias ReqAmazon.SpApi.{Error, Response}
 
   @base_path "/reports/2021-06-30"
 
   @spec create_report(Req.Request.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def create_report(%Req.Request{} = req, payload) when is_map(payload) do
     ReqAmazon.SpApi.request(req, :post, "#{@base_path}/reports", json: payload)
   end
 
   @spec get_report(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_report(%Req.Request{} = req, report_id) when is_binary(report_id) do
     ReqAmazon.SpApi.request(req, :get, "#{@base_path}/reports/#{path_segment(report_id)}")
   end
 
   @spec cancel_report(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def cancel_report(%Req.Request{} = req, report_id) when is_binary(report_id) do
     ReqAmazon.SpApi.request(req, :delete, "#{@base_path}/reports/#{path_segment(report_id)}")
   end
 
   @spec get_report_document(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_report_document(%Req.Request{} = req, report_document_id, opts \\ [])
       when is_binary(report_document_id) and is_list(opts) do
     params =
@@ -55,7 +55,8 @@ defmodule ReqAmazon.SpApi.Reports do
         :error -> []
       end
 
-    with {:ok, document} <- get_report_document(req, report_document_id, document_opts),
+    with {:ok, %Response{body: document}} <-
+           get_report_document(req, report_document_id, document_opts),
          {:ok, response} <- download_report_document(document, into, opts) do
       {:ok, %{document: document, response: response}}
     end
@@ -106,7 +107,7 @@ defmodule ReqAmazon.SpApi.Reports do
   end
 
   @spec list_reports(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def list_reports(%Req.Request{} = req, opts \\ []) when is_list(opts) do
     params =
       %{}
@@ -121,13 +122,13 @@ defmodule ReqAmazon.SpApi.Reports do
   end
 
   @spec create_report_schedule(Req.Request.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def create_report_schedule(%Req.Request{} = req, payload) when is_map(payload) do
     ReqAmazon.SpApi.request(req, :post, "#{@base_path}/schedules", json: payload)
   end
 
   @spec list_report_schedules(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def list_report_schedules(%Req.Request{} = req, opts \\ []) when is_list(opts) do
     params =
       %{}
@@ -137,7 +138,7 @@ defmodule ReqAmazon.SpApi.Reports do
   end
 
   @spec get_report_schedule(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_report_schedule(%Req.Request{} = req, report_schedule_id)
       when is_binary(report_schedule_id) do
     ReqAmazon.SpApi.request(
@@ -148,7 +149,7 @@ defmodule ReqAmazon.SpApi.Reports do
   end
 
   @spec cancel_report_schedule(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def cancel_report_schedule(%Req.Request{} = req, report_schedule_id)
       when is_binary(report_schedule_id) do
     ReqAmazon.SpApi.request(

@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.PricingV20220501Test do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, Error, PricingV20220501}
+  alias ReqAmazon.SpApi.{Response, Client, Error, PricingV20220501}
 
   test "get_featured_offer_expected_price_batch posts the current pricing batch payload", %{
     credentials: credentials
@@ -19,7 +19,7 @@ defmodule ReqAmazon.SpApi.PricingV20220501Test do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"responses" => [%{"status" => 200}]}} =
+    assert {:ok, %Response{body: %{"responses" => [%{"status" => 200}]}}} =
              PricingV20220501.get_featured_offer_expected_price_batch(req, payload)
   end
 
@@ -39,7 +39,7 @@ defmodule ReqAmazon.SpApi.PricingV20220501Test do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"responses" => [%{"status" => 200}]}} =
+    assert {:ok, %Response{body: %{"responses" => [%{"status" => 200}]}}} =
              PricingV20220501.get_competitive_summary(req, payload)
   end
 

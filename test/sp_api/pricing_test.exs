@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.PricingTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, Error, Pricing}
+  alias ReqAmazon.SpApi.{Response, Client, Error, Pricing}
 
   test "get_pricing maps legacy v0 query params", %{credentials: credentials} do
     stub_with_token(fn conn ->
@@ -20,7 +20,7 @@ defmodule ReqAmazon.SpApi.PricingTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"Products" => [%{"ASIN" => "B000123"}]}} =
+    assert {:ok, %Response{body: %{"Products" => [%{"ASIN" => "B000123"}]}}} =
              Pricing.get_pricing(req,
                marketplace_id: "ATVPDKIKX0DER",
                item_type: "Asin",
@@ -45,7 +45,7 @@ defmodule ReqAmazon.SpApi.PricingTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"Summary" => %{"BuyBoxPrices" => []}}} =
+    assert {:ok, %Response{body: %{"Summary" => %{"BuyBoxPrices" => []}}}} =
              Pricing.get_listing_offers(req, "SKU/123",
                marketplace_id: "ATVPDKIKX0DER",
                item_condition: "New",

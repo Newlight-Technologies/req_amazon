@@ -8,7 +8,7 @@ defmodule ReqAmazon.SpApi.Finances do
   @base_path "/finances/v0"
 
   @spec list_financial_event_groups(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def list_financial_event_groups(%Req.Request{} = req, opts \\ []) when is_list(opts) do
     params =
       %{}
@@ -26,7 +26,7 @@ defmodule ReqAmazon.SpApi.Finances do
   end
 
   @spec list_financial_events_by_group_id(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def list_financial_events_by_group_id(%Req.Request{} = req, event_group_id, opts \\ [])
       when is_binary(event_group_id) and is_list(opts) do
     ReqAmazon.SpApi.request(
@@ -38,7 +38,7 @@ defmodule ReqAmazon.SpApi.Finances do
   end
 
   @spec list_financial_events_by_order_id(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def list_financial_events_by_order_id(%Req.Request{} = req, order_id, opts \\ [])
       when is_binary(order_id) and is_list(opts) do
     params =
@@ -54,7 +54,7 @@ defmodule ReqAmazon.SpApi.Finances do
   end
 
   @spec list_financial_events(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def list_financial_events(%Req.Request{} = req, opts \\ []) when is_list(opts) do
     ReqAmazon.SpApi.request(req, :get, "#{@base_path}/financialEvents",
       params: posted_date_params(opts)

@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.FinancesV20240619Test do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, Error, FinancesV2, FinancesV20240619}
+  alias ReqAmazon.SpApi.{Response, Client, Error, FinancesV2, FinancesV20240619}
 
   test "list_transactions maps current query params including transaction status", %{
     credentials: credentials
@@ -25,7 +25,10 @@ defmodule ReqAmazon.SpApi.FinancesV20240619Test do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"transactions" => [%{"transactionId" => "txn-1"}], "nextToken" => nil}} =
+    assert {:ok,
+            %Response{
+              body: %{"transactions" => [%{"transactionId" => "txn-1"}], "nextToken" => nil}
+            }} =
              FinancesV20240619.list_transactions(req,
                posted_after: "2026-03-01T00:00:00Z",
                posted_before: "2026-03-15T00:00:00Z",
@@ -50,7 +53,7 @@ defmodule ReqAmazon.SpApi.FinancesV20240619Test do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"transactions" => []}} =
+    assert {:ok, %Response{body: %{"transactions" => []}}} =
              FinancesV20240619.list_transactions(req, posted_after: "2026-03-01T00:00:00Z")
   end
 
@@ -81,7 +84,7 @@ defmodule ReqAmazon.SpApi.FinancesV20240619Test do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"transactions" => []}} =
+    assert {:ok, %Response{body: %{"transactions" => []}}} =
              apply(FinancesV2, :list_transactions, [req, [posted_after: "2026-03-01T00:00:00Z"]])
   end
 end

@@ -8,7 +8,7 @@ defmodule ReqAmazon.SpApi.DataKiosk do
   @base_path "/dataKiosk/2023-11-15"
 
   @spec get_queries(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_queries(%Req.Request{} = req, opts \\ []) when is_list(opts) do
     params =
       %{}
@@ -22,25 +22,25 @@ defmodule ReqAmazon.SpApi.DataKiosk do
   end
 
   @spec create_query(Req.Request.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def create_query(%Req.Request{} = req, payload) when is_map(payload) do
     ReqAmazon.SpApi.request(req, :post, "#{@base_path}/queries", json: payload)
   end
 
   @spec get_query(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_query(%Req.Request{} = req, query_id) when is_binary(query_id) do
     ReqAmazon.SpApi.request(req, :get, "#{@base_path}/queries/#{path_segment(query_id)}")
   end
 
   @spec cancel_query(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def cancel_query(%Req.Request{} = req, query_id) when is_binary(query_id) do
     ReqAmazon.SpApi.request(req, :delete, "#{@base_path}/queries/#{path_segment(query_id)}")
   end
 
   @spec get_document(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_document(%Req.Request{} = req, document_id) when is_binary(document_id) do
     ReqAmazon.SpApi.request(
       req,

@@ -3,36 +3,57 @@ defmodule ReqAmazon.SpApi.Error do
   Exception raised for SP-API failures.
   """
 
-  defexception [:status, :errors, :message]
+  alias ReqAmazon.SpApi.Headers
+
+  defexception [:status, :errors, :message, :request_id, :retry_after, :rate_limit]
 
   @type error_item :: map()
 
   @type t :: %__MODULE__{
           status: integer() | nil,
           errors: [error_item()],
-          message: String.t()
+          message: String.t(),
+          request_id: String.t() | nil,
+          retry_after: non_neg_integer() | nil,
+          rate_limit: float() | nil
         }
 
-  @spec from_response(integer() | nil, term()) :: t()
-  def from_response(status, %{"errors" => errors}) when is_list(errors) do
+  @spec from_response(integer() | nil, term(), keyword()) :: t()
+  def from_response(status, body, meta \\ [])
+
+  def from_response(status, %{"errors" => errors}, meta) when is_list(errors) do
     %__MODULE__{
       status: status,
       errors: errors,
-      message: build_message(status, errors)
+      message: build_message(status, errors),
+      request_id: meta[:request_id],
+      retry_after: meta[:retry_after],
+      rate_limit: meta[:rate_limit]
     }
   end
 
-  def from_response(status, body) do
+  def from_response(status, body, meta) do
     %__MODULE__{
       status: status,
       errors: [],
-      message: build_generic_message(status, body)
+      message: build_generic_message(status, body),
+      request_id: meta[:request_id],
+      retry_after: meta[:retry_after],
+      rate_limit: meta[:rate_limit]
     }
   end
 
+  @doc false
   @spec wrap(term()) :: t()
   def wrap(%__MODULE__{} = error), do: error
-  def wrap(%Req.Response{status: status, body: body}), do: from_response(status, body)
+
+  def wrap(%Req.Response{status: status, body: body} = response) do
+    from_response(status, body,
+      request_id: Headers.request_id(response),
+      retry_after: Headers.retry_after(response),
+      rate_limit: Headers.rate_limit(response)
+    )
+  end
 
   def wrap(%{__exception__: true} = exception) do
     %__MODULE__{

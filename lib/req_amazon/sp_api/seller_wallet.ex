@@ -8,7 +8,7 @@ defmodule ReqAmazon.SpApi.SellerWallet do
   @base_path "/finances/transfers/wallet/2024-03-01"
 
   @spec list_accounts(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def list_accounts(%Req.Request{} = req, opts \\ []) when is_list(opts) do
     params =
       %{}
@@ -18,7 +18,7 @@ defmodule ReqAmazon.SpApi.SellerWallet do
   end
 
   @spec get_account(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_account(%Req.Request{} = req, account_id) when is_binary(account_id) do
     ReqAmazon.SpApi.request(
       req,
@@ -28,7 +28,7 @@ defmodule ReqAmazon.SpApi.SellerWallet do
   end
 
   @spec get_account_balance(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_account_balance(%Req.Request{} = req, account_id) when is_binary(account_id) do
     ReqAmazon.SpApi.request(
       req,
@@ -38,7 +38,7 @@ defmodule ReqAmazon.SpApi.SellerWallet do
   end
 
   @spec get_transfer_preview(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_transfer_preview(%Req.Request{} = req, opts) when is_list(opts) do
     source_account_id = Keyword.fetch!(opts, :source_account_id)
     destination_account_id = Keyword.fetch!(opts, :destination_account_id)
@@ -56,7 +56,7 @@ defmodule ReqAmazon.SpApi.SellerWallet do
   end
 
   @spec list_transactions(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def list_transactions(%Req.Request{} = req, account_id, opts \\ [])
       when is_binary(account_id) and is_list(opts) do
     params =
@@ -72,7 +72,7 @@ defmodule ReqAmazon.SpApi.SellerWallet do
   end
 
   @spec create_transaction(Req.Request.t(), String.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def create_transaction(%Req.Request{} = req, account_id, payload)
       when is_binary(account_id) and is_map(payload) do
     ReqAmazon.SpApi.request(

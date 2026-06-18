@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.FulfillmentOutboundTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, FulfillmentOutbound}
+  alias ReqAmazon.SpApi.{Response, Client, FulfillmentOutbound}
 
   test "list_all_fulfillment_orders maps query params", %{credentials: credentials} do
     stub_with_token(fn conn ->
@@ -16,7 +16,7 @@ defmodule ReqAmazon.SpApi.FulfillmentOutboundTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"FulfillmentOrders" => [], "NextToken" => nil}} =
+    assert {:ok, %Response{body: %{"FulfillmentOrders" => [], "NextToken" => nil}}} =
              FulfillmentOutbound.list_all_fulfillment_orders(req,
                query_start_date: "2026-03-01T00:00:00Z",
                next_token: "next-1"
@@ -36,7 +36,7 @@ defmodule ReqAmazon.SpApi.FulfillmentOutboundTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"trackingNumber" => "1Z999"}} =
+    assert {:ok, %Response{body: %{"trackingNumber" => "1Z999"}}} =
              FulfillmentOutbound.get_package_tracking_details(req, "42")
   end
 
@@ -51,7 +51,7 @@ defmodule ReqAmazon.SpApi.FulfillmentOutboundTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"status" => "Cancelled"}} =
+    assert {:ok, %Response{body: %{"status" => "Cancelled"}}} =
              FulfillmentOutbound.cancel_fulfillment_order(req, "order-123")
   end
 end

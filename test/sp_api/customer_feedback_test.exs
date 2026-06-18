@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.CustomerFeedbackTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, CustomerFeedback, Error}
+  alias ReqAmazon.SpApi.{Response, Client, CustomerFeedback, Error}
 
   test "get_browse_node_return_topics maps the current return topics endpoint", %{
     credentials: credentials
@@ -17,7 +17,7 @@ defmodule ReqAmazon.SpApi.CustomerFeedbackTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"topics" => [%{"topic" => "Too small"}]}} =
+    assert {:ok, %Response{body: %{"topics" => [%{"topic" => "Too small"}]}}} =
              CustomerFeedback.get_browse_node_return_topics(req, "12345",
                marketplace_id: "ATVPDKIKX0DER"
              )
@@ -35,7 +35,7 @@ defmodule ReqAmazon.SpApi.CustomerFeedbackTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"trends" => [%{"topic" => "Damaged"}]}} =
+    assert {:ok, %Response{body: %{"trends" => [%{"topic" => "Damaged"}]}}} =
              CustomerFeedback.get_browse_node_return_trends(req, "12/345",
                marketplace_id: "ATVPDKIKX0DER"
              )

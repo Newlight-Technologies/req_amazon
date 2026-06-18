@@ -10,7 +10,7 @@ defmodule ReqAmazon.SpApi.ExternalFulfillment do
   # --- Shipping ---
 
   @spec get_shipments(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_shipments(%Req.Request{} = req, opts \\ []) when is_list(opts) do
     params =
       %{}
@@ -23,7 +23,7 @@ defmodule ReqAmazon.SpApi.ExternalFulfillment do
   # --- Inventory ---
 
   @spec submit_inventory_update(Req.Request.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def submit_inventory_update(%Req.Request{} = req, payload) when is_map(payload) do
     ReqAmazon.SpApi.request(
       req,
@@ -36,7 +36,7 @@ defmodule ReqAmazon.SpApi.ExternalFulfillment do
   # --- Returns ---
 
   @spec list_returns(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def list_returns(%Req.Request{} = req, opts \\ []) when is_list(opts) do
     params =
       %{}
@@ -47,7 +47,7 @@ defmodule ReqAmazon.SpApi.ExternalFulfillment do
   end
 
   @spec get_return(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_return(%Req.Request{} = req, return_id) when is_binary(return_id) do
     ReqAmazon.SpApi.request(
       req,

@@ -6,7 +6,7 @@ defmodule ReqAmazon.SpApi.FbaInboundEligibility do
   import ReqAmazon
 
   @spec get_item_eligibility_preview(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_item_eligibility_preview(%Req.Request{} = req, opts) when is_list(opts) do
     asin = Keyword.fetch!(opts, :asin)
     program = Keyword.fetch!(opts, :program)

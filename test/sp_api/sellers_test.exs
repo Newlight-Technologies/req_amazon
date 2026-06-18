@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.SellersTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, Error, Sellers}
+  alias ReqAmazon.SpApi.{Response, Client, Error, Sellers}
 
   test "get_marketplace_participations and get_account hit the expected seller endpoints", %{
     credentials: credentials
@@ -18,10 +18,10 @@ defmodule ReqAmazon.SpApi.SellersTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, [%{"marketplace" => %{"id" => "ATVPDKIKX0DER"}}]} =
+    assert {:ok, %Response{body: [%{"marketplace" => %{"id" => "ATVPDKIKX0DER"}}]}} =
              Sellers.get_marketplace_participations(req)
 
-    assert {:ok, %{"businessType" => "PRIVATE_LABEL"}} = Sellers.get_account(req)
+    assert {:ok, %Response{body: %{"businessType" => "PRIVATE_LABEL"}}} = Sellers.get_account(req)
   end
 
   test "sellers errors are wrapped", %{credentials: credentials} do

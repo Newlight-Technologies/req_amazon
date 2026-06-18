@@ -8,7 +8,7 @@ defmodule ReqAmazon.SpApi.Orders do
   @base_path "/orders/v0"
 
   @spec list_orders(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def list_orders(%Req.Request{} = req, opts) when is_list(opts) do
     marketplace_ids = Keyword.fetch!(opts, :marketplace_ids)
 
@@ -25,13 +25,13 @@ defmodule ReqAmazon.SpApi.Orders do
   end
 
   @spec get_order(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_order(%Req.Request{} = req, order_id) when is_binary(order_id) do
     ReqAmazon.SpApi.request(req, :get, "#{@base_path}/orders/#{path_segment(order_id)}")
   end
 
   @spec get_order_buyer_info(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_order_buyer_info(%Req.Request{} = req, order_id) when is_binary(order_id) do
     ReqAmazon.SpApi.request(
       req,
@@ -41,7 +41,7 @@ defmodule ReqAmazon.SpApi.Orders do
   end
 
   @spec get_order_address(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_order_address(%Req.Request{} = req, order_id) when is_binary(order_id) do
     ReqAmazon.SpApi.request(
       req,
@@ -51,7 +51,7 @@ defmodule ReqAmazon.SpApi.Orders do
   end
 
   @spec get_order_items(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_order_items(%Req.Request{} = req, order_id, opts \\ [])
       when is_binary(order_id) and is_list(opts) do
     params =
@@ -67,7 +67,7 @@ defmodule ReqAmazon.SpApi.Orders do
   end
 
   @spec get_order_items_buyer_info(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_order_items_buyer_info(%Req.Request{} = req, order_id, opts \\ [])
       when is_binary(order_id) and is_list(opts) do
     params =
@@ -83,7 +83,7 @@ defmodule ReqAmazon.SpApi.Orders do
   end
 
   @spec get_order_regulated_info(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_order_regulated_info(%Req.Request{} = req, order_id) when is_binary(order_id) do
     ReqAmazon.SpApi.request(
       req,
@@ -93,7 +93,7 @@ defmodule ReqAmazon.SpApi.Orders do
   end
 
   @spec confirm_shipment(Req.Request.t(), String.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def confirm_shipment(%Req.Request{} = req, order_id, payload)
       when is_binary(order_id) and is_map(payload) do
     ReqAmazon.SpApi.request(

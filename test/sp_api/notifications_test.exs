@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.NotificationsTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, Error, Notifications}
+  alias ReqAmazon.SpApi.{Response, Client, Error, Notifications}
 
   test "subscription operations hit the expected paths and payloads", %{credentials: credentials} do
     subscription_payload = %{
@@ -39,31 +39,31 @@ defmodule ReqAmazon.SpApi.NotificationsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"subscriptionId" => "sub-1"}} =
+    assert {:ok, %Response{body: %{"subscriptionId" => "sub-1"}}} =
              Notifications.get_subscription(req, "DATA_KIOSK_QUERY_PROCESSING_FINISHED")
 
-    assert {:ok, %{"subscriptionId" => "sub-1"}} =
+    assert {:ok, %Response{body: %{"subscriptionId" => "sub-1"}}} =
              Notifications.create_subscription(
                req,
                "DATA_KIOSK_QUERY_PROCESSING_FINISHED",
                subscription_payload
              )
 
-    assert {:ok, %{"testNotificationId" => "test-1"}} =
+    assert {:ok, %Response{body: %{"testNotificationId" => "test-1"}}} =
              Notifications.send_test_notification(
                req,
                "DATA_KIOSK_QUERY_PROCESSING_FINISHED",
                %{"destinationId" => "dest-1"}
              )
 
-    assert {:ok, %{"subscriptionId" => "sub/1"}} =
+    assert {:ok, %Response{body: %{"subscriptionId" => "sub/1"}}} =
              Notifications.get_subscription_by_id(
                req,
                "DATA_KIOSK_QUERY_PROCESSING_FINISHED",
                "sub/1"
              )
 
-    assert {:ok, %{"deleted" => true}} =
+    assert {:ok, %Response{body: %{"deleted" => true}}} =
              Notifications.delete_subscription_by_id(
                req,
                "DATA_KIOSK_QUERY_PROCESSING_FINISHED",
@@ -84,7 +84,7 @@ defmodule ReqAmazon.SpApi.NotificationsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"subscriptionId" => "sub-1"}} =
+    assert {:ok, %Response{body: %{"subscriptionId" => "sub-1"}}} =
              Notifications.get_subscription(req, "DATA_KIOSK_QUERY_PROCESSING_FINISHED",
                payload_version: "2023-11-15"
              )
@@ -115,15 +115,17 @@ defmodule ReqAmazon.SpApi.NotificationsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, [%{"destinationId" => "dest-1"}]} = Notifications.get_destinations(req)
+    assert {:ok, %Response{body: [%{"destinationId" => "dest-1"}]}} =
+             Notifications.get_destinations(req)
 
-    assert {:ok, %{"destinationId" => "dest-1"}} =
+    assert {:ok, %Response{body: %{"destinationId" => "dest-1"}}} =
              Notifications.create_destination(req, destination_payload)
 
-    assert {:ok, %{"destinationId" => "dest/1"}} =
+    assert {:ok, %Response{body: %{"destinationId" => "dest/1"}}} =
              Notifications.get_destination(req, "dest/1")
 
-    assert {:ok, %{"deleted" => true}} = Notifications.delete_destination(req, "dest/1")
+    assert {:ok, %Response{body: %{"deleted" => true}}} =
+             Notifications.delete_destination(req, "dest/1")
   end
 
   test "notifications errors are wrapped", %{credentials: credentials} do

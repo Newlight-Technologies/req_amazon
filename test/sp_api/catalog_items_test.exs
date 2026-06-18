@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.CatalogItemsTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{CatalogItems, Client, Error}
+  alias ReqAmazon.SpApi.{Response, CatalogItems, Client, Error}
 
   test "search_catalog_items maps asin_list to identifiers and included data", %{
     credentials: credentials
@@ -20,7 +20,7 @@ defmodule ReqAmazon.SpApi.CatalogItemsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"items" => [%{"asin" => "B001234567"}], "pagination" => %{}}} =
+    assert {:ok, %Response{body: %{"items" => [%{"asin" => "B001234567"}], "pagination" => %{}}}} =
              CatalogItems.search_catalog_items(req,
                marketplace_ids: ["ATVPDKIKX0DER"],
                asin_list: ["B001234567", "B008765432"],
@@ -48,7 +48,7 @@ defmodule ReqAmazon.SpApi.CatalogItemsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"items" => [%{"asin" => "B001234567"}], "pagination" => %{}}} =
+    assert {:ok, %Response{body: %{"items" => [%{"asin" => "B001234567"}], "pagination" => %{}}}} =
              CatalogItems.search_catalog_items(req,
                marketplace_ids: ["ATVPDKIKX0DER"],
                identifiers: ["SKU-001"],
@@ -75,7 +75,7 @@ defmodule ReqAmazon.SpApi.CatalogItemsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"items" => [%{"asin" => "B001234567"}], "pagination" => %{}}} =
+    assert {:ok, %Response{body: %{"items" => [%{"asin" => "B001234567"}], "pagination" => %{}}}} =
              CatalogItems.search_catalog_items(req,
                marketplace_ids: ["ATVPDKIKX0DER"],
                keywords: ["poncho", "rain"],
@@ -132,7 +132,7 @@ defmodule ReqAmazon.SpApi.CatalogItemsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"asin" => "B001234567"}} =
+    assert {:ok, %Response{body: %{"asin" => "B001234567"}}} =
              CatalogItems.get_catalog_item(req, "B00123/4567",
                marketplace_ids: ["ATVPDKIKX0DER"],
                included_data: ["summaries", "images"],

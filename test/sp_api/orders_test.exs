@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.OrdersTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, Orders}
+  alias ReqAmazon.SpApi.{Response, Client, Orders}
 
   test "list_orders maps query params and unwraps payload", %{credentials: credentials} do
     stub_with_token(fn conn ->
@@ -20,7 +20,8 @@ defmodule ReqAmazon.SpApi.OrdersTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"Orders" => [%{"AmazonOrderId" => "123"}], "NextToken" => nil}} =
+    assert {:ok,
+            %Response{body: %{"Orders" => [%{"AmazonOrderId" => "123"}], "NextToken" => nil}}} =
              Orders.list_orders(req,
                marketplace_ids: ["ATVPDKIKX0DER"],
                created_after: "2026-03-01T00:00:00Z",
@@ -40,7 +41,7 @@ defmodule ReqAmazon.SpApi.OrdersTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"confirmed" => true}} =
+    assert {:ok, %Response{body: %{"confirmed" => true}}} =
              Orders.confirm_shipment(req, "123", %{
                "packageDetail" => %{"packageReferenceId" => "pkg-1"}
              })
@@ -57,7 +58,7 @@ defmodule ReqAmazon.SpApi.OrdersTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"OrderItems" => [%{"OrderItemId" => "1"}]}} =
+    assert {:ok, %Response{body: %{"OrderItems" => [%{"OrderItemId" => "1"}]}}} =
              Orders.get_order_items(req, "123", next_token: "next-1")
   end
 end

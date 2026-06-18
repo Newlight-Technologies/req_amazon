@@ -8,7 +8,7 @@ defmodule ReqAmazon.SpApi.CustomerFeedback do
   @base_path "/customerFeedback/2024-06-01"
 
   @spec get_item_review_topics(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_item_review_topics(%Req.Request{} = req, asin, opts)
       when is_binary(asin) and is_list(opts) do
     marketplace_id = Keyword.fetch!(opts, :marketplace_id)
@@ -23,7 +23,7 @@ defmodule ReqAmazon.SpApi.CustomerFeedback do
   end
 
   @spec get_item_browse_node(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_item_browse_node(%Req.Request{} = req, asin, opts)
       when is_binary(asin) and is_list(opts) do
     marketplace_id = Keyword.fetch!(opts, :marketplace_id)
@@ -38,7 +38,7 @@ defmodule ReqAmazon.SpApi.CustomerFeedback do
   end
 
   @spec get_browse_node_review_topics(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_browse_node_review_topics(%Req.Request{} = req, browse_node_id, opts)
       when is_binary(browse_node_id) and is_list(opts) do
     marketplace_id = Keyword.fetch!(opts, :marketplace_id)
@@ -53,7 +53,7 @@ defmodule ReqAmazon.SpApi.CustomerFeedback do
   end
 
   @spec get_item_review_trends(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_item_review_trends(%Req.Request{} = req, asin, opts)
       when is_binary(asin) and is_list(opts) do
     marketplace_id = Keyword.fetch!(opts, :marketplace_id)
@@ -68,7 +68,7 @@ defmodule ReqAmazon.SpApi.CustomerFeedback do
   end
 
   @spec get_browse_node_review_trends(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_browse_node_review_trends(%Req.Request{} = req, browse_node_id, opts)
       when is_binary(browse_node_id) and is_list(opts) do
     ReqAmazon.SpApi.request(
@@ -80,7 +80,7 @@ defmodule ReqAmazon.SpApi.CustomerFeedback do
   end
 
   @spec get_browse_node_return_topics(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_browse_node_return_topics(%Req.Request{} = req, browse_node_id, opts)
       when is_binary(browse_node_id) and is_list(opts) do
     ReqAmazon.SpApi.request(
@@ -92,7 +92,7 @@ defmodule ReqAmazon.SpApi.CustomerFeedback do
   end
 
   @spec get_browse_node_return_trends(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_browse_node_return_trends(%Req.Request{} = req, browse_node_id, opts)
       when is_binary(browse_node_id) and is_list(opts) do
     ReqAmazon.SpApi.request(

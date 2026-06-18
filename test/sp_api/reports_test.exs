@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.ReportsTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, Error, Reports}
+  alias ReqAmazon.SpApi.{Response, Client, Error, Reports}
 
   test "list_reports maps report filters", %{credentials: credentials} do
     stub_with_token(fn conn ->
@@ -18,7 +18,7 @@ defmodule ReqAmazon.SpApi.ReportsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"reports" => [%{"reportId" => "r-1"}], "nextToken" => nil}} =
+    assert {:ok, %Response{body: %{"reports" => [%{"reportId" => "r-1"}], "nextToken" => nil}}} =
              Reports.list_reports(req,
                report_types: ["GET_FLAT_FILE_OPEN_LISTINGS_DATA"],
                processing_statuses: ["DONE", "FATAL"],
@@ -44,10 +44,10 @@ defmodule ReqAmazon.SpApi.ReportsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"reportId" => "report-1"}} =
+    assert {:ok, %Response{body: %{"reportId" => "report-1"}}} =
              Reports.create_report(req, %{"reportType" => "GET_FLAT_FILE_OPEN_LISTINGS_DATA"})
 
-    assert {:ok, %{"url" => "https://example.test/report.tsv"}} =
+    assert {:ok, %Response{body: %{"url" => "https://example.test/report.tsv"}}} =
              Reports.get_report_document(req, "doc-1")
   end
 
@@ -68,7 +68,7 @@ defmodule ReqAmazon.SpApi.ReportsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"compressionAlgorithm" => "GZIP"}} =
+    assert {:ok, %Response{body: %{"compressionAlgorithm" => "GZIP"}}} =
              Reports.get_report_document(req, "doc-1", enable_content_encoding_url_header: true)
   end
 

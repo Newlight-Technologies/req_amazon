@@ -11,7 +11,7 @@ defmodule ReqAmazon.SpApi.Uploads do
   @base_path "/uploads/2020-11-01"
 
   @spec create_upload_destination_for_resource(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def create_upload_destination_for_resource(%Req.Request{} = req, resource, opts)
       when is_binary(resource) and is_list(opts) do
     marketplace_ids = Keyword.fetch!(opts, :marketplace_ids)

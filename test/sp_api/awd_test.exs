@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.AwdTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Awd, Client}
+  alias ReqAmazon.SpApi.{Response, Awd, Client}
 
   test "inbound shipment labels use modeled shipment paths", %{credentials: credentials} do
     stub_with_token(fn conn ->
@@ -19,10 +19,10 @@ defmodule ReqAmazon.SpApi.AwdTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"labels" => []}} =
+    assert {:ok, %Response{body: %{"labels" => []}}} =
              Awd.get_inbound_shipment_labels(req, "ship/1", page_type: "A4", format_type: "PDF")
 
-    assert {:ok, %{"pageTypes" => ["A4"]}} =
+    assert {:ok, %Response{body: %{"pageTypes" => ["A4"]}}} =
              Awd.get_inbound_shipment_label_page_types(req, "ship/1")
   end
 end
