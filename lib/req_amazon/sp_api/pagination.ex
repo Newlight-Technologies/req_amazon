@@ -14,8 +14,6 @@ defmodule ReqAmazon.SpApi.Pagination do
   `stream/1` follows that token to lazily page through an operation.
   """
 
-  alias ReqAmazon.SpApi.Response
-
   # Checked in order. The `pagination` object wins over a bare token because
   # FBA Inventory carries both `payload` and a sibling `pagination`.
   # `paginationToken` is the request-side parameter name on the newer APIs
@@ -60,9 +58,10 @@ defmodule ReqAmazon.SpApi.Pagination do
   `ReqAmazon.SpApi.Error` (a paginated sequence can't meaningfully continue past
   a failed page); wrap enumeration in `try/1` if you need to recover.
   """
-  @spec stream((String.t() | nil -> {:ok, Response.t()} | {:error, Exception.t()})) ::
-          Enumerable.t()
+  @spec stream((String.t() | nil -> {:ok, map()} | {:error, Exception.t()})) :: Enumerable.t()
   def stream(fun) when is_function(fun, 1) do
+    # Matched as a plain map (not %Response{}) so this module stays independent of
+    # ReqAmazon.SpApi.Response, which depends on `next_token/1` here.
     Stream.resource(
       fn -> {:cont, nil} end,
       fn
@@ -71,8 +70,8 @@ defmodule ReqAmazon.SpApi.Pagination do
 
         {:cont, token} ->
           case fun.(token) do
-            {:ok, %Response{next_token: nil} = response} -> {[response], :halt}
-            {:ok, %Response{next_token: next} = response} -> {[response], {:cont, next}}
+            {:ok, %{next_token: nil} = response} -> {[response], :halt}
+            {:ok, %{next_token: next} = response} -> {[response], {:cont, next}}
             {:error, error} -> raise error
           end
       end,
