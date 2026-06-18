@@ -59,8 +59,10 @@ defmodule ReqAmazon.SpApi.Token.Cache do
   @doc false
   @spec key(Provider.grant(), map()) :: term()
   def key({:refresh_token, refresh_token}, %{client_id: client_id}) do
-    # Avoid keeping the refresh token in the key; the hash is enough to scope it.
-    {:refresh_token, client_id, :erlang.phash2(refresh_token)}
+    # SHA-256 (not phash2): a bounded, non-cryptographic hash could collide and
+    # serve one seller's cached token to another. Keep the raw secret out of the
+    # key while staying collision-resistant.
+    {:refresh_token, client_id, :crypto.hash(:sha256, refresh_token)}
   end
 
   def key({:client_credentials, scope}, %{client_id: client_id}) do

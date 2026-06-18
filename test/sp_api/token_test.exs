@@ -66,6 +66,25 @@ defmodule ReqAmazon.SpApi.Token.CacheTest do
 
     assert :counters.get(counter, 1) == 2
   end
+
+  test "distinct refresh tokens for the same client never share a token", %{
+    counter: counter,
+    credentials: credentials
+  } do
+    assert {:ok, token_a} = Cache.fetch({:refresh_token, "refresh-a"}, credentials)
+    assert {:ok, token_b} = Cache.fetch({:refresh_token, "refresh-b"}, credentials)
+
+    assert token_a != token_b
+    assert :counters.get(counter, 1) == 2
+  end
+
+  test "key/2 is collision-resistant and stable for refresh tokens", %{credentials: credentials} do
+    assert Cache.key({:refresh_token, "refresh-a"}, credentials) ==
+             Cache.key({:refresh_token, "refresh-a"}, credentials)
+
+    refute Cache.key({:refresh_token, "refresh-a"}, credentials) ==
+             Cache.key({:refresh_token, "refresh-b"}, credentials)
+  end
 end
 
 defmodule ReqAmazon.SpApi.TokenGrantlessTest do
