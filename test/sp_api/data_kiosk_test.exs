@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.DataKioskTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, DataKiosk, Error}
+  alias ReqAmazon.SpApi.{Response, Client, DataKiosk, Error}
 
   test "get_queries maps filters and create_query posts the payload", %{credentials: credentials} do
     payload = %{"query" => "query { salesAndTrafficByDate { startDate } }"}
@@ -25,7 +25,7 @@ defmodule ReqAmazon.SpApi.DataKioskTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"queries" => [%{"queryId" => "query-1"}]}} =
+    assert {:ok, %Response{body: %{"queries" => [%{"queryId" => "query-1"}]}}} =
              DataKiosk.get_queries(req,
                processing_statuses: ["DONE", "FATAL"],
                page_size: 50,
@@ -34,7 +34,7 @@ defmodule ReqAmazon.SpApi.DataKioskTest do
                pagination_token: "page-1"
              )
 
-    assert {:ok, %{"queryId" => "query-1", "processingStatus" => "IN_QUEUE"}} =
+    assert {:ok, %Response{body: %{"queryId" => "query-1", "processingStatus" => "IN_QUEUE"}}} =
              DataKiosk.create_query(req, payload)
   end
 
@@ -54,12 +54,13 @@ defmodule ReqAmazon.SpApi.DataKioskTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"queryId" => "query/1", "processingStatus" => "DONE"}} =
+    assert {:ok, %Response{body: %{"queryId" => "query/1", "processingStatus" => "DONE"}}} =
              DataKiosk.get_query(req, "query/1")
 
-    assert {:ok, %{"cancelled" => true}} = DataKiosk.cancel_query(req, "query/1")
+    assert {:ok, %Response{body: %{"cancelled" => true}}} = DataKiosk.cancel_query(req, "query/1")
 
-    assert {:ok, %{"documentId" => "doc/1", "url" => "https://example.test/doc/1"}} =
+    assert {:ok,
+            %Response{body: %{"documentId" => "doc/1", "url" => "https://example.test/doc/1"}}} =
              DataKiosk.get_document(req, "doc/1")
   end
 

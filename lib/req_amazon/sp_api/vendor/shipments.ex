@@ -8,19 +8,19 @@ defmodule ReqAmazon.SpApi.Vendor.Shipments do
   @base_path "/vendor/shipping/v1"
 
   @spec submit_shipment_confirmations(Req.Request.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def submit_shipment_confirmations(%Req.Request{} = req, payload) when is_map(payload) do
     ReqAmazon.SpApi.request(req, :post, "#{@base_path}/shipmentConfirmations", json: payload)
   end
 
   @spec submit_shipments(Req.Request.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def submit_shipments(%Req.Request{} = req, payload) when is_map(payload) do
     ReqAmazon.SpApi.request(req, :post, "#{@base_path}/shipments", json: payload)
   end
 
   @spec get_shipment_details(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_shipment_details(%Req.Request{} = req, opts) when is_list(opts) do
     params =
       %{}
@@ -53,7 +53,7 @@ defmodule ReqAmazon.SpApi.Vendor.Shipments do
   end
 
   @spec get_transport_labels(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_transport_labels(%Req.Request{} = req, opts) when is_list(opts) do
     params =
       %{}

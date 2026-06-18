@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.ListingsRestrictionsTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, Listings, ListingsRestrictions}
+  alias ReqAmazon.SpApi.{Response, Client, Listings, ListingsRestrictions}
 
   test "get_listings_restrictions maps documented params", %{credentials: credentials} do
     stub_with_token(fn conn ->
@@ -21,7 +21,7 @@ defmodule ReqAmazon.SpApi.ListingsRestrictionsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"restrictions" => []}} =
+    assert {:ok, %Response{body: %{"restrictions" => []}}} =
              ListingsRestrictions.get_listings_restrictions(req,
                asin: "B000123",
                seller_id: "SELLER1",
@@ -47,7 +47,7 @@ defmodule ReqAmazon.SpApi.ListingsRestrictionsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"restrictions" => []}} =
+    assert {:ok, %Response{body: %{"restrictions" => []}}} =
              Listings.get_listings_restrictions(req,
                asin: "B000123",
                seller_id: "SELLER1",

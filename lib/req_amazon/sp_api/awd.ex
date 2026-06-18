@@ -8,7 +8,7 @@ defmodule ReqAmazon.SpApi.Awd do
   @base_path "/awd/2024-05-09"
 
   @spec list_inbound_shipments(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def list_inbound_shipments(%Req.Request{} = req, opts \\ []) when is_list(opts) do
     params =
       %{}
@@ -24,7 +24,7 @@ defmodule ReqAmazon.SpApi.Awd do
   end
 
   @spec get_inbound_shipment(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_inbound_shipment(%Req.Request{} = req, shipment_id) when is_binary(shipment_id) do
     ReqAmazon.SpApi.request(
       req,
@@ -34,13 +34,13 @@ defmodule ReqAmazon.SpApi.Awd do
   end
 
   @spec create_inbound_order(Req.Request.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def create_inbound_order(%Req.Request{} = req, payload) when is_map(payload) do
     ReqAmazon.SpApi.request(req, :post, "#{@base_path}/inboundOrders", json: payload)
   end
 
   @spec get_inbound_order(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_inbound_order(%Req.Request{} = req, order_id) when is_binary(order_id) do
     ReqAmazon.SpApi.request(
       req,
@@ -50,7 +50,7 @@ defmodule ReqAmazon.SpApi.Awd do
   end
 
   @spec update_inbound_order(Req.Request.t(), String.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def update_inbound_order(%Req.Request{} = req, order_id, payload)
       when is_binary(order_id) and is_map(payload) do
     ReqAmazon.SpApi.request(
@@ -62,7 +62,7 @@ defmodule ReqAmazon.SpApi.Awd do
   end
 
   @spec cancel_inbound_order(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def cancel_inbound_order(%Req.Request{} = req, order_id) when is_binary(order_id) do
     ReqAmazon.SpApi.request(
       req,
@@ -72,7 +72,7 @@ defmodule ReqAmazon.SpApi.Awd do
   end
 
   @spec confirm_inbound_order(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def confirm_inbound_order(%Req.Request{} = req, order_id) when is_binary(order_id) do
     ReqAmazon.SpApi.request(
       req,
@@ -82,7 +82,7 @@ defmodule ReqAmazon.SpApi.Awd do
   end
 
   @spec get_inbound_shipment_labels(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_inbound_shipment_labels(%Req.Request{} = req, shipment_id, opts \\ [])
       when is_binary(shipment_id) and is_list(opts) do
     params =
@@ -99,7 +99,7 @@ defmodule ReqAmazon.SpApi.Awd do
   end
 
   @spec get_inbound_shipment_label_page_types(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_inbound_shipment_label_page_types(%Req.Request{} = req, shipment_id)
       when is_binary(shipment_id) do
     ReqAmazon.SpApi.request(
@@ -110,7 +110,7 @@ defmodule ReqAmazon.SpApi.Awd do
   end
 
   @spec update_transport(Req.Request.t(), String.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def update_transport(%Req.Request{} = req, shipment_id, payload)
       when is_binary(shipment_id) and is_map(payload) do
     ReqAmazon.SpApi.request(
@@ -122,13 +122,13 @@ defmodule ReqAmazon.SpApi.Awd do
   end
 
   @spec check_inbound_eligibility(Req.Request.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def check_inbound_eligibility(%Req.Request{} = req, payload) when is_map(payload) do
     ReqAmazon.SpApi.request(req, :post, "#{@base_path}/inboundEligibility", json: payload)
   end
 
   @spec get_inventory(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_inventory(%Req.Request{} = req, opts \\ []) when is_list(opts) do
     params =
       %{}

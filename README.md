@@ -87,6 +87,46 @@ req =
 
 `attach/2` is the lower-level building block. `Client.new/1` is the convenience wrapper around it.
 
+### Response Shape
+
+Every operation returns `{:ok, %ReqAmazon.SpApi.Response{}}` on success or
+`{:error, %ReqAmazon.SpApi.Error{}}` on failure.
+
+```elixir
+{:ok, %ReqAmazon.SpApi.Response{
+  body: body,             # decoded response, with Amazon's `payload` envelope stripped
+  status: 200,
+  headers: headers,
+  next_token: next_token, # pagination token, normalized across Amazon's casing/nesting (nil when no next page)
+  rate_limit: rate_limit, # per-operation rate from `x-amzn-RateLimit-Limit` (nil when Amazon omits it)
+  request_id: request_id  # `x-amzn-RequestId`, the value to quote in support cases
+}} = ReqAmazon.SpApi.Orders.list_orders(req, marketplace_ids: ["ATVPDKIKX0DER"])
+```
+
+`body` is never transformed beyond stripping the `payload` envelope; `next_token`,
+`rate_limit`, and `request_id` are normalized metadata Amazon returns but that
+callers would otherwise have to recover by hand. To page through results, follow
+`next_token` until it is `nil`:
+
+```elixir
+def stream_orders(req, opts) do
+  case ReqAmazon.SpApi.Orders.list_orders(req, opts) do
+    {:ok, %{next_token: nil} = response} -> {:ok, response.body}
+    {:ok, %{next_token: token} = response} -> # ... fetch next page with next_token: token
+    {:error, error} -> {:error, error}
+  end
+end
+```
+
+The same metadata is preserved on failures: a throttled `Error` carries
+`:status`, `:request_id`, `:retry_after`, and `:rate_limit`, so callers can back
+off intelligently on `429`.
+
+The streaming download helpers (`Reports.stream_report_document/4`,
+`Reports.download_report_document/3`) and the Product Type Definitions
+linked-schema fetchers operate on temporary, non-SP-API URLs and therefore return
+the raw `Req.Response`/decoded body rather than a `Response` struct.
+
 ### Caller-Managed Access Tokens
 
 If your application refreshes LWA tokens itself, pass the access token with `:access_token`:

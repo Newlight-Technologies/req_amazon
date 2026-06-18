@@ -8,7 +8,7 @@ defmodule ReqAmazon.SpApi.Services do
   @base_path "/service/v1"
 
   @spec get_service_job_by_service_job_id(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_service_job_by_service_job_id(%Req.Request{} = req, service_job_id)
       when is_binary(service_job_id) do
     ReqAmazon.SpApi.request(
@@ -19,7 +19,7 @@ defmodule ReqAmazon.SpApi.Services do
   end
 
   @spec cancel_service_job_by_service_job_id(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def cancel_service_job_by_service_job_id(%Req.Request{} = req, service_job_id)
       when is_binary(service_job_id) do
     ReqAmazon.SpApi.request(
@@ -30,7 +30,7 @@ defmodule ReqAmazon.SpApi.Services do
   end
 
   @spec complete_service_job_by_service_job_id(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def complete_service_job_by_service_job_id(%Req.Request{} = req, service_job_id)
       when is_binary(service_job_id) do
     ReqAmazon.SpApi.request(
@@ -41,7 +41,7 @@ defmodule ReqAmazon.SpApi.Services do
   end
 
   @spec get_service_jobs(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_service_jobs(%Req.Request{} = req, opts) when is_list(opts) do
     marketplace_ids = Keyword.fetch!(opts, :marketplace_ids)
 
@@ -68,7 +68,7 @@ defmodule ReqAmazon.SpApi.Services do
   end
 
   @spec add_appointment_for_service_job_by_service_job_id(Req.Request.t(), String.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def add_appointment_for_service_job_by_service_job_id(
         %Req.Request{} = req,
         service_job_id,
@@ -89,7 +89,7 @@ defmodule ReqAmazon.SpApi.Services do
           String.t(),
           map()
         ) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def reschedule_appointment_for_service_job_by_service_job_id(
         %Req.Request{} = req,
         service_job_id,
@@ -106,7 +106,7 @@ defmodule ReqAmazon.SpApi.Services do
   end
 
   @spec assign_appointment_resources(Req.Request.t(), String.t(), String.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def assign_appointment_resources(
         %Req.Request{} = req,
         service_job_id,

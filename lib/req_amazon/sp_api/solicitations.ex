@@ -8,7 +8,7 @@ defmodule ReqAmazon.SpApi.Solicitations do
   @base_path "/solicitations/v1"
 
   @spec get_solicitation_actions_for_order(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_solicitation_actions_for_order(%Req.Request{} = req, amazon_order_id, opts)
       when is_binary(amazon_order_id) and is_list(opts) do
     marketplace_ids = Keyword.fetch!(opts, :marketplace_ids)
@@ -27,7 +27,7 @@ defmodule ReqAmazon.SpApi.Solicitations do
           String.t(),
           keyword()
         ) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def create_product_review_and_seller_feedback_solicitation(
         %Req.Request{} = req,
         amazon_order_id,

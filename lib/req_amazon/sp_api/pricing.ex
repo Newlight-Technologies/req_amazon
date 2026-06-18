@@ -17,7 +17,7 @@ defmodule ReqAmazon.SpApi.Pricing do
   @base_path "/products/pricing/v0"
 
   @spec get_pricing(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_pricing(%Req.Request{} = req, opts) when is_list(opts) do
     marketplace_id = Keyword.fetch!(opts, :marketplace_id)
     item_type = Keyword.fetch!(opts, :item_type)
@@ -35,7 +35,7 @@ defmodule ReqAmazon.SpApi.Pricing do
   end
 
   @spec get_competitive_pricing(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_competitive_pricing(%Req.Request{} = req, opts) when is_list(opts) do
     marketplace_id = Keyword.fetch!(opts, :marketplace_id)
     item_type = Keyword.fetch!(opts, :item_type)
@@ -52,7 +52,7 @@ defmodule ReqAmazon.SpApi.Pricing do
   end
 
   @spec get_listing_offers(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_listing_offers(%Req.Request{} = req, seller_sku, opts)
       when is_binary(seller_sku) and is_list(opts) do
     marketplace_id = Keyword.fetch!(opts, :marketplace_id)
@@ -73,7 +73,7 @@ defmodule ReqAmazon.SpApi.Pricing do
   end
 
   @spec get_item_offers(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_item_offers(%Req.Request{} = req, asin, opts)
       when is_binary(asin) and is_list(opts) do
     marketplace_id = Keyword.fetch!(opts, :marketplace_id)
@@ -94,7 +94,7 @@ defmodule ReqAmazon.SpApi.Pricing do
   end
 
   @spec get_item_offers_batch(Req.Request.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_item_offers_batch(%Req.Request{} = req, payload) when is_map(payload) do
     ReqAmazon.SpApi.request(
       req,
@@ -105,7 +105,7 @@ defmodule ReqAmazon.SpApi.Pricing do
   end
 
   @spec get_listing_offers_batch(Req.Request.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_listing_offers_batch(%Req.Request{} = req, payload) when is_map(payload) do
     ReqAmazon.SpApi.request(
       req,
@@ -116,12 +116,12 @@ defmodule ReqAmazon.SpApi.Pricing do
   end
 
   @spec get_featured_offer_expected_price_batch(Req.Request.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   @deprecated "Use ReqAmazon.SpApi.PricingV20220501.get_featured_offer_expected_price_batch/2 instead."
   defdelegate get_featured_offer_expected_price_batch(req, payload), to: PricingV20220501
 
   @spec get_competitive_summary(Req.Request.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   @deprecated "Use ReqAmazon.SpApi.PricingV20220501.get_competitive_summary/2 instead."
   defdelegate get_competitive_summary(req, payload), to: PricingV20220501
 end

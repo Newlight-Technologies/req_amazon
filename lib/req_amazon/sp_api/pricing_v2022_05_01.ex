@@ -9,7 +9,7 @@ defmodule ReqAmazon.SpApi.PricingV20220501 do
   @base_path "/batches/products/pricing/2022-05-01"
 
   @spec get_featured_offer_expected_price_batch(Req.Request.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_featured_offer_expected_price_batch(%Req.Request{} = req, payload)
       when is_map(payload) do
     ReqAmazon.SpApi.request(
@@ -21,7 +21,7 @@ defmodule ReqAmazon.SpApi.PricingV20220501 do
   end
 
   @spec get_competitive_summary(Req.Request.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_competitive_summary(%Req.Request{} = req, payload) when is_map(payload) do
     ReqAmazon.SpApi.request(
       req,

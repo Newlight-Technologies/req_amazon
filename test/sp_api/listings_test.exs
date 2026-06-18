@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.ListingsTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, Error, Listings}
+  alias ReqAmazon.SpApi.{Response, Client, Error, Listings}
 
   test "get_listings_item sends seller_id, sku, and marketplace params", %{
     credentials: credentials
@@ -19,7 +19,7 @@ defmodule ReqAmazon.SpApi.ListingsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"sku" => "SKU-001"}} =
+    assert {:ok, %Response{body: %{"sku" => "SKU-001"}}} =
              Listings.get_listings_item(req, "SELLER 1", "SKU/001",
                marketplace_ids: ["ATVPDKIKX0DER"],
                included_data: ["summaries", "issues"],
@@ -49,7 +49,7 @@ defmodule ReqAmazon.SpApi.ListingsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"sku" => "SKU-001", "status" => "ACCEPTED"}} =
+    assert {:ok, %Response{body: %{"sku" => "SKU-001", "status" => "ACCEPTED"}}} =
              Listings.put_listings_item(
                req,
                "SELLER1",
@@ -88,7 +88,7 @@ defmodule ReqAmazon.SpApi.ListingsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"items" => [%{"sku" => "SKU-001"}], "pagination" => %{}}} =
+    assert {:ok, %Response{body: %{"items" => [%{"sku" => "SKU-001"}], "pagination" => %{}}}} =
              Listings.search_listings_items(req, "SELLER1",
                marketplace_ids: ["ATVPDKIKX0DER"],
                included_data: ["summaries", "issues"],

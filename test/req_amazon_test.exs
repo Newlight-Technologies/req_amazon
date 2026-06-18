@@ -1,7 +1,7 @@
 defmodule ReqAmazonTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, Error, Orders}
+  alias ReqAmazon.SpApi.{Response, Client, Error, Orders}
 
   test "client injects sandbox host, user agent, and caches the LWA token", %{
     credentials: credentials
@@ -29,10 +29,10 @@ defmodule ReqAmazonTest do
 
     req = Client.new(credentials: credentials, sandbox: true, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"AmazonOrderId" => "123-1234567-1234567"}} =
+    assert {:ok, %Response{body: %{"AmazonOrderId" => "123-1234567-1234567"}}} =
              Orders.get_order(req, "123-1234567-1234567")
 
-    assert {:ok, %{"AmazonOrderId" => "123-1234567-1234567"}} =
+    assert {:ok, %Response{body: %{"AmazonOrderId" => "123-1234567-1234567"}}} =
              Orders.get_order(req, "123-1234567-1234567")
 
     assert_received {:token_request, %{}}
@@ -75,7 +75,7 @@ defmodule ReqAmazonTest do
         plug: {Req.Test, stub_name()}
       )
 
-    assert {:ok, %{"AmazonOrderId" => "123-1234567-1234567"}} =
+    assert {:ok, %Response{body: %{"AmazonOrderId" => "123-1234567-1234567"}}} =
              Orders.get_order(req, "123-1234567-1234567")
   end
 

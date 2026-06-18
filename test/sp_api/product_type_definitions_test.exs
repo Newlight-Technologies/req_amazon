@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.ProductTypeDefinitionsTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, Error, ProductTypeDefinitions}
+  alias ReqAmazon.SpApi.{Client, Error, ProductTypeDefinitions, Response}
 
   test "search_definitions_product_types maps documented optional params", %{
     credentials: credentials
@@ -20,7 +20,7 @@ defmodule ReqAmazon.SpApi.ProductTypeDefinitionsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"productTypes" => [%{"name" => "SHIRT"}]}} =
+    assert {:ok, %Response{body: %{"productTypes" => [%{"name" => "SHIRT"}]}}} =
              ProductTypeDefinitions.search_definitions_product_types(req,
                marketplace_ids: ["ATVPDKIKX0DER"],
                keywords: "shirt",
@@ -49,7 +49,7 @@ defmodule ReqAmazon.SpApi.ProductTypeDefinitionsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"name" => "HOME / DECOR"}} =
+    assert {:ok, %Response{body: %{"name" => "HOME / DECOR"}}} =
              ProductTypeDefinitions.get_definitions_product_type(req, "HOME / DECOR",
                marketplace_ids: ["ATVPDKIKX0DER"],
                seller_id: "SELLER1",

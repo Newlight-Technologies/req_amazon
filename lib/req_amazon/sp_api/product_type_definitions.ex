@@ -9,7 +9,7 @@ defmodule ReqAmazon.SpApi.ProductTypeDefinitions do
   @base_path "/definitions/2020-09-01/productTypes"
 
   @spec search_definitions_product_types(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def search_definitions_product_types(%Req.Request{} = req, opts \\ []) when is_list(opts) do
     marketplace_ids = Keyword.fetch!(opts, :marketplace_ids)
 
@@ -25,7 +25,7 @@ defmodule ReqAmazon.SpApi.ProductTypeDefinitions do
   end
 
   @spec get_definitions_product_type(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_definitions_product_type(%Req.Request{} = req, product_type, opts)
       when is_binary(product_type) and is_list(opts) do
     marketplace_ids = Keyword.fetch!(opts, :marketplace_ids)

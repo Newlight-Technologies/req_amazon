@@ -25,7 +25,7 @@ defmodule ReqAmazon.SpApi.APlusContent do
   @base_path "/aplus/2020-11-01"
 
   @spec search_content_documents(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def search_content_documents(%Req.Request{} = req, opts) when is_list(opts) do
     marketplace_id = Keyword.fetch!(opts, :marketplace_id)
 
@@ -38,7 +38,7 @@ defmodule ReqAmazon.SpApi.APlusContent do
   end
 
   @spec create_content_document(Req.Request.t(), keyword(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def create_content_document(%Req.Request{} = req, opts, payload)
       when is_list(opts) and is_map(payload) do
     marketplace_id = Keyword.fetch!(opts, :marketplace_id)
@@ -51,7 +51,7 @@ defmodule ReqAmazon.SpApi.APlusContent do
   end
 
   @spec get_content_document(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_content_document(%Req.Request{} = req, content_reference_key, opts)
       when is_binary(content_reference_key) and is_list(opts) do
     marketplace_id = Keyword.fetch!(opts, :marketplace_id)
@@ -70,7 +70,7 @@ defmodule ReqAmazon.SpApi.APlusContent do
   end
 
   @spec update_content_document(Req.Request.t(), String.t(), keyword(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def update_content_document(%Req.Request{} = req, content_reference_key, opts, payload)
       when is_binary(content_reference_key) and is_list(opts) and is_map(payload) do
     marketplace_id = Keyword.fetch!(opts, :marketplace_id)
@@ -86,7 +86,7 @@ defmodule ReqAmazon.SpApi.APlusContent do
   end
 
   @spec list_content_document_asin_relations(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def list_content_document_asin_relations(%Req.Request{} = req, content_reference_key, opts)
       when is_binary(content_reference_key) and is_list(opts) do
     marketplace_id = Keyword.fetch!(opts, :marketplace_id)
@@ -105,7 +105,7 @@ defmodule ReqAmazon.SpApi.APlusContent do
   end
 
   @spec post_content_document_asin_relations(Req.Request.t(), String.t(), keyword(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def post_content_document_asin_relations(
         %Req.Request{} = req,
         content_reference_key,
@@ -126,7 +126,7 @@ defmodule ReqAmazon.SpApi.APlusContent do
   end
 
   @spec validate_content_document_asin_relations(Req.Request.t(), keyword(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def validate_content_document_asin_relations(%Req.Request{} = req, opts, payload)
       when is_list(opts) and is_map(payload) do
     marketplace_id = Keyword.fetch!(opts, :marketplace_id)
@@ -139,7 +139,7 @@ defmodule ReqAmazon.SpApi.APlusContent do
   end
 
   @spec search_content_publish_records(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def search_content_publish_records(%Req.Request{} = req, opts) when is_list(opts) do
     marketplace_id = Keyword.fetch!(opts, :marketplace_id)
     asin = Keyword.fetch!(opts, :asin)
@@ -154,7 +154,7 @@ defmodule ReqAmazon.SpApi.APlusContent do
   end
 
   @spec post_content_document_approval_submission(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def post_content_document_approval_submission(
         %Req.Request{} = req,
         content_reference_key,
@@ -173,7 +173,7 @@ defmodule ReqAmazon.SpApi.APlusContent do
   end
 
   @spec post_content_document_suspend_submission(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def post_content_document_suspend_submission(
         %Req.Request{} = req,
         content_reference_key,

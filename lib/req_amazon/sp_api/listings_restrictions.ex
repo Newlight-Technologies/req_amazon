@@ -8,7 +8,7 @@ defmodule ReqAmazon.SpApi.ListingsRestrictions do
   @base_path "/listings/2021-08-01/restrictions"
 
   @spec get_listings_restrictions(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_listings_restrictions(%Req.Request{} = req, opts) when is_list(opts) do
     asin = Keyword.fetch!(opts, :asin)
     seller_id = Keyword.fetch!(opts, :seller_id)

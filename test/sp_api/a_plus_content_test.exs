@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.APlusContentTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{APlusContent, Client, Error}
+  alias ReqAmazon.SpApi.{Response, APlusContent, Client, Error}
 
   test "search_content_documents and get_content_document map query params", %{
     credentials: credentials
@@ -25,13 +25,13 @@ defmodule ReqAmazon.SpApi.APlusContentTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"contentMetadataRecords" => [%{"name" => "Brand Story"}]}} =
+    assert {:ok, %Response{body: %{"contentMetadataRecords" => [%{"name" => "Brand Story"}]}}} =
              APlusContent.search_content_documents(req,
                marketplace_id: "ATVPDKIKX0DER",
                page_token: "page-1"
              )
 
-    assert {:ok, %{"contentDocument" => %{"name" => "Brand Story"}}} =
+    assert {:ok, %Response{body: %{"contentDocument" => %{"name" => "Brand Story"}}}} =
              APlusContent.get_content_document(req, "ref/key-1",
                marketplace_id: "ATVPDKIKX0DER",
                included_data_set: ["METADATA", "CONTENTS"]
@@ -67,10 +67,10 @@ defmodule ReqAmazon.SpApi.APlusContentTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"contentReferenceKey" => "ref-key-1"}} =
+    assert {:ok, %Response{body: %{"contentReferenceKey" => "ref-key-1"}}} =
              APlusContent.create_content_document(req, [marketplace_id: "ATVPDKIKX0DER"], payload)
 
-    assert {:ok, %{"warnings" => []}} =
+    assert {:ok, %Response{body: %{"warnings" => []}}} =
              APlusContent.update_content_document(
                req,
                "ref/key-1",
@@ -107,13 +107,13 @@ defmodule ReqAmazon.SpApi.APlusContentTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"asinMetadataSet" => [%{"asin" => "B000123456"}]}} =
+    assert {:ok, %Response{body: %{"asinMetadataSet" => [%{"asin" => "B000123456"}]}}} =
              APlusContent.list_content_document_asin_relations(req, "ref/key-1",
                marketplace_id: "ATVPDKIKX0DER",
                page_token: "page-2"
              )
 
-    assert {:ok, %{"warnings" => []}} =
+    assert {:ok, %Response{body: %{"warnings" => []}}} =
              APlusContent.post_content_document_asin_relations(
                req,
                "ref/key-1",
@@ -121,7 +121,7 @@ defmodule ReqAmazon.SpApi.APlusContentTest do
                relation_payload
              )
 
-    assert {:ok, %{"warnings" => []}} =
+    assert {:ok, %Response{body: %{"warnings" => []}}} =
              APlusContent.validate_content_document_asin_relations(
                req,
                [marketplace_id: "ATVPDKIKX0DER"],
@@ -155,19 +155,20 @@ defmodule ReqAmazon.SpApi.APlusContentTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"publishRecordList" => [%{"contentReferenceKey" => "ref-key-1"}]}} =
+    assert {:ok,
+            %Response{body: %{"publishRecordList" => [%{"contentReferenceKey" => "ref-key-1"}]}}} =
              APlusContent.search_content_publish_records(req,
                marketplace_id: "ATVPDKIKX0DER",
                asin: "B000123456",
                page_token: "page-3"
              )
 
-    assert {:ok, %{"warnings" => []}} =
+    assert {:ok, %Response{body: %{"warnings" => []}}} =
              APlusContent.post_content_document_approval_submission(req, "ref/key-1",
                marketplace_id: "ATVPDKIKX0DER"
              )
 
-    assert {:ok, %{"warnings" => []}} =
+    assert {:ok, %Response{body: %{"warnings" => []}}} =
              APlusContent.post_content_document_suspend_submission(req, "ref/key-1",
                marketplace_id: "ATVPDKIKX0DER"
              )

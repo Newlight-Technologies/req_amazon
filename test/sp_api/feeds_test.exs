@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.FeedsTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, Feeds}
+  alias ReqAmazon.SpApi.{Response, Client, Feeds}
 
   test "create_feed_document posts content type body", %{credentials: credentials} do
     stub_with_token(fn conn ->
@@ -18,7 +18,10 @@ defmodule ReqAmazon.SpApi.FeedsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"feedDocumentId" => "doc-1", "url" => "https://example.test/upload"}} =
+    assert {:ok,
+            %Response{
+              body: %{"feedDocumentId" => "doc-1", "url" => "https://example.test/upload"}
+            }} =
              Feeds.create_feed_document(req, "text/tab-separated-values; charset=UTF-8")
   end
 
@@ -36,9 +39,9 @@ defmodule ReqAmazon.SpApi.FeedsTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"feedId" => "feed-1"}} =
+    assert {:ok, %Response{body: %{"feedId" => "feed-1"}}} =
              Feeds.create_feed(req, %{"feedType" => "POST_FLAT_FILE_LISTINGS_DATA"})
 
-    assert {:ok, %{"cancelled" => true}} = Feeds.cancel_feed(req, "feed-1")
+    assert {:ok, %Response{body: %{"cancelled" => true}}} = Feeds.cancel_feed(req, "feed-1")
   end
 end

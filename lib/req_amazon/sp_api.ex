@@ -35,7 +35,7 @@ defmodule ReqAmazon.SpApi do
         )
   """
 
-  alias ReqAmazon.SpApi.{Auth, Error}
+  alias ReqAmazon.SpApi.{Auth, Error, Headers, Response}
 
   @default_endpoint "https://sellingpartnerapi-na.amazon.com"
   @default_marketplace_id "ATVPDKIKX0DER"
@@ -99,12 +99,12 @@ defmodule ReqAmazon.SpApi do
 
   @doc false
   @spec request(Req.Request.t(), atom(), String.t(), keyword()) ::
-          {:ok, term()} | {:error, Error.t()}
+          {:ok, Response.t()} | {:error, Error.t()}
   def request(%Req.Request{} = request, method, path, options \\ [])
       when is_atom(method) and is_binary(path) and is_list(options) do
     case Req.request(request, Keyword.merge([method: method, url: path], options)) do
-      {:ok, %Req.Response{body: body}} ->
-        {:ok, ReqAmazon.unwrap_payload(body)}
+      {:ok, %Req.Response{} = response} ->
+        {:ok, Response.from_req(response)}
 
       {:error, error} ->
         {:error, Error.wrap(error)}
@@ -282,8 +282,13 @@ defmodule ReqAmazon.SpApi do
     {request, response}
   end
 
-  defp sp_api_unwrap_errors({request, %Req.Response{status: status, body: body}}) do
-    {request, Error.from_response(status, body)}
+  defp sp_api_unwrap_errors({request, %Req.Response{status: status, body: body} = response}) do
+    {request,
+     Error.from_response(status, body,
+       request_id: Headers.request_id(response),
+       retry_after: Headers.retry_after(response),
+       rate_limit: Headers.rate_limit(response)
+     )}
   end
 
   defp sandbox_base_url(%URI{} = base_url), do: sandbox_uri(base_url)

@@ -1,7 +1,7 @@
 defmodule ReqAmazon.SpApi.FinancesTest do
   use ReqAmazon.Case, async: false
 
-  alias ReqAmazon.SpApi.{Client, Finances}
+  alias ReqAmazon.SpApi.{Response, Client, Finances}
 
   test "list_financial_event_groups maps date filters", %{credentials: credentials} do
     stub_with_token(fn conn ->
@@ -20,7 +20,7 @@ defmodule ReqAmazon.SpApi.FinancesTest do
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
 
-    assert {:ok, %{"FinancialEventGroupList" => [], "NextToken" => nil}} =
+    assert {:ok, %Response{body: %{"FinancialEventGroupList" => [], "NextToken" => nil}}} =
              Finances.list_financial_event_groups(req,
                financial_event_group_started_after: "2026-03-01T00:00:00Z",
                financial_event_group_started_before: "2026-03-15T00:00:00Z",

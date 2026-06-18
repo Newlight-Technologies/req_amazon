@@ -4,7 +4,7 @@ defmodule ReqAmazon.SpApi.ApplicationManagement do
   """
 
   @spec rotate_application_client_secret(Req.Request.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def rotate_application_client_secret(%Req.Request{} = req) do
     ReqAmazon.SpApi.request(req, :post, "/applications/2023-11-30/clientSecret")
   end

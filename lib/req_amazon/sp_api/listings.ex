@@ -8,7 +8,7 @@ defmodule ReqAmazon.SpApi.Listings do
   @base_path "/listings/2021-08-01"
 
   @spec get_listings_item(Req.Request.t(), String.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_listings_item(%Req.Request{} = req, seller_id, sku, opts)
       when is_binary(seller_id) and is_binary(sku) and is_list(opts) do
     ReqAmazon.SpApi.request(
@@ -20,7 +20,7 @@ defmodule ReqAmazon.SpApi.Listings do
   end
 
   @spec put_listings_item(Req.Request.t(), String.t(), String.t(), keyword(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def put_listings_item(%Req.Request{} = req, seller_id, sku, opts, payload)
       when is_binary(seller_id) and is_binary(sku) and is_list(opts) and is_map(payload) do
     ReqAmazon.SpApi.request(
@@ -33,7 +33,7 @@ defmodule ReqAmazon.SpApi.Listings do
   end
 
   @spec patch_listings_item(Req.Request.t(), String.t(), String.t(), keyword(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def patch_listings_item(%Req.Request{} = req, seller_id, sku, opts, payload)
       when is_binary(seller_id) and is_binary(sku) and is_list(opts) and is_map(payload) do
     ReqAmazon.SpApi.request(
@@ -46,7 +46,7 @@ defmodule ReqAmazon.SpApi.Listings do
   end
 
   @spec delete_listings_item(Req.Request.t(), String.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def delete_listings_item(%Req.Request{} = req, seller_id, sku, opts)
       when is_binary(seller_id) and is_binary(sku) and is_list(opts) do
     ReqAmazon.SpApi.request(
@@ -58,7 +58,7 @@ defmodule ReqAmazon.SpApi.Listings do
   end
 
   @spec search_listings_items(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def search_listings_items(%Req.Request{} = req, seller_id, opts)
       when is_binary(seller_id) and is_list(opts) do
     ReqAmazon.SpApi.request(
@@ -70,7 +70,7 @@ defmodule ReqAmazon.SpApi.Listings do
   end
 
   @spec get_listings_restrictions(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_listings_restrictions(%Req.Request{} = req, opts) when is_list(opts) do
     ReqAmazon.SpApi.ListingsRestrictions.get_listings_restrictions(req, opts)
   end

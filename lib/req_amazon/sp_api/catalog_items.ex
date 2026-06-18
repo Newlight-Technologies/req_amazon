@@ -8,7 +8,7 @@ defmodule ReqAmazon.SpApi.CatalogItems do
   @base_path "/catalog/2022-04-01/items"
 
   @spec search_catalog_items(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def search_catalog_items(%Req.Request{} = req, opts) when is_list(opts) do
     marketplace_ids = Keyword.fetch!(opts, :marketplace_ids)
     keywords = Keyword.get(opts, :keywords)
@@ -72,7 +72,7 @@ defmodule ReqAmazon.SpApi.CatalogItems do
   end
 
   @spec get_catalog_item(Req.Request.t(), String.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_catalog_item(%Req.Request{} = req, asin, opts)
       when is_binary(asin) and is_list(opts) do
     marketplace_ids = Keyword.fetch!(opts, :marketplace_ids)

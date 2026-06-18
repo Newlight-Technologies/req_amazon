@@ -8,7 +8,7 @@ defmodule ReqAmazon.SpApi.Feeds do
   @base_path "/feeds/2021-06-30"
 
   @spec create_feed_document(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def create_feed_document(%Req.Request{} = req, content_type) when is_binary(content_type) do
     ReqAmazon.SpApi.request(req, :post, "#{@base_path}/documents",
       json: %{"contentType" => content_type}
@@ -16,19 +16,19 @@ defmodule ReqAmazon.SpApi.Feeds do
   end
 
   @spec create_feed(Req.Request.t(), map()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def create_feed(%Req.Request{} = req, payload) when is_map(payload) do
     ReqAmazon.SpApi.request(req, :post, "#{@base_path}/feeds", json: payload)
   end
 
   @spec get_feed(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_feed(%Req.Request{} = req, feed_id) when is_binary(feed_id) do
     ReqAmazon.SpApi.request(req, :get, "#{@base_path}/feeds/#{path_segment(feed_id)}")
   end
 
   @spec get_feed_document(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def get_feed_document(%Req.Request{} = req, feed_document_id)
       when is_binary(feed_document_id) do
     ReqAmazon.SpApi.request(
@@ -39,13 +39,13 @@ defmodule ReqAmazon.SpApi.Feeds do
   end
 
   @spec cancel_feed(Req.Request.t(), String.t()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def cancel_feed(%Req.Request{} = req, feed_id) when is_binary(feed_id) do
     ReqAmazon.SpApi.request(req, :delete, "#{@base_path}/feeds/#{path_segment(feed_id)}")
   end
 
   @spec list_feeds(Req.Request.t(), keyword()) ::
-          {:ok, map()} | {:error, ReqAmazon.SpApi.Error.t()}
+          {:ok, ReqAmazon.SpApi.Response.t()} | {:error, ReqAmazon.SpApi.Error.t()}
   def list_feeds(%Req.Request{} = req, opts \\ []) when is_list(opts) do
     params =
       %{}
