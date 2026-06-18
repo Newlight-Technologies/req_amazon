@@ -95,7 +95,7 @@ defmodule ReqAmazon.Case do
     Application.delete_env(:req_amazon, :sp_api_token_url)
     Application.delete_env(:req_amazon, :sp_api_user_agent)
 
-    ReqAmazon.SpApi.Auth.reset()
+    ReqAmazon.SpApi.Token.Cache.reset()
 
     on_exit(fn ->
       Enum.each(original_env, fn
@@ -103,7 +103,7 @@ defmodule ReqAmazon.Case do
         {key, value} -> Application.put_env(:req_amazon, key, value)
       end)
 
-      ReqAmazon.SpApi.Auth.reset()
+      ReqAmazon.SpApi.Token.Cache.reset()
     end)
 
     {:ok, credentials: credentials}

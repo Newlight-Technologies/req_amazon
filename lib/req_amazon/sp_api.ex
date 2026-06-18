@@ -35,13 +35,14 @@ defmodule ReqAmazon.SpApi do
         )
   """
 
-  alias ReqAmazon.SpApi.{Auth, Error, Headers, Response}
+  alias ReqAmazon.SpApi.{Error, Headers, Response}
+  alias ReqAmazon.SpApi.Token
 
   @default_endpoint "https://sellingpartnerapi-na.amazon.com"
   @default_marketplace_id "ATVPDKIKX0DER"
   @default_region "us-east-1"
   @default_token_url "https://api.amazon.com/auth/o2/token"
-  @plugin_options [:access_token, :credentials, :sandbox]
+  @plugin_options [:access_token, :credentials, :grantless_scope, :sandbox]
   @forward_request_option_keys [
     :adapter,
     :connect_options,
@@ -59,7 +60,10 @@ defmodule ReqAmazon.SpApi do
     :unix_socket
   ]
   @required_signing_credential_keys [:aws_access_key_id, :aws_secret_access_key]
-  @required_lwa_credential_keys [:client_id, :client_secret, :refresh_token]
+  # LWA "app" credentials are shared by both grant types; the refresh token is
+  # only required for seller/vendor (refresh_token) grants, not grantless ones.
+  @lwa_app_credential_keys [:client_id, :client_secret]
+  @required_lwa_credential_keys @lwa_app_credential_keys ++ [:refresh_token]
   @credential_keys @required_signing_credential_keys ++
                      @required_lwa_credential_keys ++ [:aws_region]
 
@@ -147,7 +151,11 @@ defmodule ReqAmazon.SpApi do
   def credentials(%{} = credentials, opts) do
     required_keys =
       @required_signing_credential_keys ++
-        if Keyword.get(opts, :require_lwa?, true), do: @required_lwa_credential_keys, else: []
+        cond do
+          Keyword.get(opts, :require_lwa?, true) -> @required_lwa_credential_keys
+          Keyword.get(opts, :require_lwa_app?, false) -> @lwa_app_credential_keys
+          true -> []
+        end
 
     normalized =
       Enum.reduce(@credential_keys, %{}, fn key, acc ->
@@ -211,19 +219,22 @@ defmodule ReqAmazon.SpApi do
   end
 
   defp ensure_credentials(request) do
-    require_lwa? = not access_token_provided?(request)
+    opts = credential_requirement(request)
 
     case Map.get(request.options, :credentials) do
       nil ->
-        Req.Request.merge_new_options(request,
-          credentials: credentials(nil, require_lwa?: require_lwa?)
-        )
+        Req.Request.merge_new_options(request, credentials: credentials(nil, opts))
 
       provided ->
-        Req.Request.merge_options(
-          request,
-          credentials: credentials(provided, require_lwa?: require_lwa?)
-        )
+        Req.Request.merge_options(request, credentials: credentials(provided, opts))
+    end
+  end
+
+  defp credential_requirement(request) do
+    cond do
+      access_token_provided?(request) -> [require_lwa?: false]
+      grantless_scope(request) -> [require_lwa?: false, require_lwa_app?: true]
+      true -> [require_lwa?: true]
     end
   end
 
@@ -258,8 +269,9 @@ defmodule ReqAmazon.SpApi do
           _ ->
             credentials = request.options[:credentials]
             request_options = forwarded_request_options(request)
+            grant = token_grant(request, credentials)
 
-            case Auth.fetch_access_token(credentials, request_options, self()) do
+            case Token.Cache.fetch(grant, credentials, request_options, self()) do
               {:ok, token} ->
                 Req.Request.put_header(request, "x-amz-access-token", token)
 
@@ -310,6 +322,20 @@ defmodule ReqAmazon.SpApi do
     request.options
     |> Map.take(@forward_request_option_keys)
     |> Enum.to_list()
+  end
+
+  defp token_grant(request, credentials) do
+    case grantless_scope(request) do
+      scope when is_binary(scope) and scope != "" -> {:client_credentials, scope}
+      _ -> {:refresh_token, credentials.refresh_token}
+    end
+  end
+
+  defp grantless_scope(request) do
+    case request.options[:grantless_scope] do
+      scope when is_binary(scope) and scope != "" -> scope
+      _ -> nil
+    end
   end
 
   defp access_token_provided?(request) do

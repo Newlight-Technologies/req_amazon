@@ -6,7 +6,7 @@ defmodule ReqAmazon.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      ReqAmazon.SpApi.Auth
+      ReqAmazon.SpApi.Token.Cache
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one, name: ReqAmazon.Supervisor)

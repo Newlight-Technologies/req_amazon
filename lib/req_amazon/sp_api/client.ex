@@ -7,7 +7,7 @@ defmodule ReqAmazon.SpApi.Client do
   such as `:credentials`, `:access_token`, and `:sandbox`.
   """
 
-  @plugin_option_keys [:access_token, :credentials, :sandbox]
+  @plugin_option_keys [:access_token, :credentials, :grantless_scope, :sandbox]
 
   @doc """
   Builds a configured Req client for Amazon SP-API requests.
