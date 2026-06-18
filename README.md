@@ -22,19 +22,22 @@ Prefer pinning consuming applications to a commit or tag instead of tracking `ma
 
 ## Credentials And Configuration
 
-When `req_amazon` manages Login with Amazon token refresh for you, provide full SP-API credentials:
+When `req_amazon` manages Login with Amazon token refresh for you, provide the
+LWA credentials:
 
 ```elixir
 config :req_amazon,
   sp_api_credentials: %{
     client_id: System.fetch_env!("AMAZON_SP_API_CLIENT_ID"),
     client_secret: System.fetch_env!("AMAZON_SP_API_CLIENT_SECRET"),
-    refresh_token: System.fetch_env!("AMAZON_SP_API_REFRESH_TOKEN"),
-    aws_access_key_id: System.fetch_env!("AMAZON_SP_API_AWS_ACCESS_KEY_ID"),
-    aws_secret_access_key: System.fetch_env!("AMAZON_SP_API_AWS_SECRET_ACCESS_KEY"),
-    aws_region: System.get_env("AMAZON_SP_API_AWS_REGION", "us-east-1")
+    refresh_token: System.fetch_env!("AMAZON_SP_API_REFRESH_TOKEN")
   }
 ```
+
+> **AWS signing is opt-in.** Amazon no longer requires AWS SigV4 on SP-API calls —
+> the LWA access token is enough — so `aws_access_key_id`/`aws_secret_access_key`
+> are **only** needed when you pass `sign?: true`. Configure the endpoint with
+> `region:` (`:na` | `:eu` | `:fe`) rather than hardcoding a URL.
 
 Optional application config:
 
@@ -51,13 +54,15 @@ Access tokens are cached and refreshed automatically. Concurrent requests for th
 same credentials share a single in-flight refresh (single-flight), so a fleet of
 workers never stampedes Amazon's token endpoint.
 
-If your application already manages LWA refresh and wants to pass a caller-managed access token, only the AWS signing credentials are required:
+If your application already manages LWA refresh and passes a caller-managed
+access token (`access_token:`), no credentials are required at all — unless you
+also enable signing, in which case supply the AWS signing keys:
 
 ```elixir
+# only needed with sign?: true
 %{
   aws_access_key_id: System.fetch_env!("AMAZON_SP_API_AWS_ACCESS_KEY_ID"),
-  aws_secret_access_key: System.fetch_env!("AMAZON_SP_API_AWS_SECRET_ACCESS_KEY"),
-  aws_region: System.get_env("AMAZON_SP_API_AWS_REGION", "us-east-1")
+  aws_secret_access_key: System.fetch_env!("AMAZON_SP_API_AWS_SECRET_ACCESS_KEY")
 }
 ```
 
@@ -70,16 +75,19 @@ Use `Client.new/1` when you want a ready-to-call `Req.Request` with the SP-API p
 ```elixir
 req =
   ReqAmazon.SpApi.Client.new(
+    region: :na,
     credentials: %{
       client_id: System.fetch_env!("AMAZON_SP_API_CLIENT_ID"),
       client_secret: System.fetch_env!("AMAZON_SP_API_CLIENT_SECRET"),
-      refresh_token: System.fetch_env!("AMAZON_SP_API_REFRESH_TOKEN"),
-      aws_access_key_id: System.fetch_env!("AMAZON_SP_API_AWS_ACCESS_KEY_ID"),
-      aws_secret_access_key: System.fetch_env!("AMAZON_SP_API_AWS_SECRET_ACCESS_KEY"),
-      aws_region: "us-east-1"
+      refresh_token: System.fetch_env!("AMAZON_SP_API_REFRESH_TOKEN")
     }
   )
 ```
+
+Config options: `:region` (`:na` | `:eu` | `:fe`), `:endpoint`, `:aws_region`,
+`:user_agent`, `:sign?` (default `false`), `:sandbox`. To sign with AWS SigV4,
+pass `sign?: true` and add `aws_access_key_id`/`aws_secret_access_key` to the
+credentials.
 
 ### `ReqAmazon.SpApi.attach/2`
 
