@@ -10,6 +10,8 @@ defmodule ReqAmazon.SpApi.Pagination do
 
   `next_token/1` runs against the original response envelope (before the
   `payload` wrapper is stripped) so it finds the token regardless of shape.
+
+  `stream/1` follows that token to lazily page through an operation.
   """
 
   # Checked in order. The `pagination` object wins over a bare token because
@@ -37,6 +39,45 @@ defmodule ReqAmazon.SpApi.Pagination do
   @spec next_token(term()) :: String.t() | nil
   def next_token(body) when is_map(body), do: find_token(body, @token_paths)
   def next_token(_body), do: nil
+
+  @doc """
+  Lazily pages through an operation, following `next_token`.
+
+  `fun` receives the continuation token (`nil` on the first call) and must return
+  an operation result. Because `put_param/3` drops `nil`, passing the token
+  straight through omits it on the first request:
+
+      ReqAmazon.SpApi.Pagination.stream(fn token ->
+        ReqAmazon.SpApi.Orders.list_orders(req, Keyword.put(opts, :next_token, token))
+      end)
+      |> Stream.flat_map(& &1.body["Orders"])
+      |> Enum.to_list()
+
+  The stream yields one `ReqAmazon.SpApi.Response` per page and stops after the
+  page whose `next_token` is `nil`. An error **raises** the
+  `ReqAmazon.SpApi.Error` (a paginated sequence can't meaningfully continue past
+  a failed page); wrap enumeration in `try/1` if you need to recover.
+  """
+  @spec stream((String.t() | nil -> {:ok, map()} | {:error, Exception.t()})) :: Enumerable.t()
+  def stream(fun) when is_function(fun, 1) do
+    # Matched as a plain map (not %Response{}) so this module stays independent of
+    # ReqAmazon.SpApi.Response, which depends on `next_token/1` here.
+    Stream.resource(
+      fn -> {:cont, nil} end,
+      fn
+        :halt ->
+          {:halt, :halt}
+
+        {:cont, token} ->
+          case fun.(token) do
+            {:ok, %{next_token: nil} = response} -> {[response], :halt}
+            {:ok, %{next_token: next} = response} -> {[response], {:cont, next}}
+            {:error, error} -> raise error
+          end
+      end,
+      fn _acc -> :ok end
+    )
+  end
 
   defp find_token(_body, []), do: nil
 

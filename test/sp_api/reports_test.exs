@@ -119,4 +119,50 @@ defmodule ReqAmazon.SpApi.ReportsTest do
               errors: [%{"code" => "MissingReportDocumentUrl"} | _]
             }} = Reports.download_report_document(%{}, fn _, acc -> {:cont, acc} end)
   end
+
+  test "fetch_report_document downloads and gunzips a GZIP report", %{credentials: credentials} do
+    report = "sku\tqty\nABC\t1\n"
+    gzipped = :zlib.gzip(report)
+
+    stub_with_token(fn conn ->
+      case {conn.host, conn.request_path} do
+        {"sellingpartnerapi-na.amazon.com", "/reports/2021-06-30/documents/doc-1"} ->
+          Req.Test.json(conn, %{
+            "url" => "https://reports.amazon.test/report.tsv.gz",
+            "compressionAlgorithm" => "GZIP"
+          })
+
+        {"reports.amazon.test", "/report.tsv.gz"} ->
+          conn
+          |> Plug.Conn.put_resp_content_type("application/octet-stream")
+          |> Plug.Conn.send_resp(200, gzipped)
+      end
+    end)
+
+    req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
+
+    assert {:ok, ^report} =
+             Reports.fetch_report_document(req, "doc-1", plug: {Req.Test, stub_name()})
+  end
+
+  test "fetch_report_document returns uncompressed bodies as-is", %{credentials: credentials} do
+    report = "sku\tqty\nABC\t1\n"
+
+    stub_with_token(fn conn ->
+      case {conn.host, conn.request_path} do
+        {"sellingpartnerapi-na.amazon.com", "/reports/2021-06-30/documents/doc-2"} ->
+          Req.Test.json(conn, %{"url" => "https://reports.amazon.test/report.tsv"})
+
+        {"reports.amazon.test", "/report.tsv"} ->
+          conn
+          |> Plug.Conn.put_resp_content_type("text/tab-separated-values")
+          |> Plug.Conn.send_resp(200, report)
+      end
+    end)
+
+    req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
+
+    assert {:ok, ^report} =
+             Reports.fetch_report_document(req, "doc-2", plug: {Req.Test, stub_name()})
+  end
 end

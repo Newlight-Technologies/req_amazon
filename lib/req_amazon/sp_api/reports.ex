@@ -62,6 +62,63 @@ defmodule ReqAmazon.SpApi.Reports do
     end
   end
 
+  @doc """
+  Fetches a report document and returns its fully-decoded contents.
+
+  Resolves the document metadata, downloads the temporary URL into memory, and
+  decompresses it per the document's `compressionAlgorithm` (currently `GZIP`).
+  Use this for reports that comfortably fit in memory; for large reports prefer
+  `stream_report_document/4`.
+  """
+  @spec fetch_report_document(Req.Request.t(), String.t(), keyword()) ::
+          {:ok, binary()} | {:error, Error.t()}
+  def fetch_report_document(%Req.Request{} = req, report_document_id, opts \\ [])
+      when is_binary(report_document_id) and is_list(opts) do
+    with {:ok, %Response{body: document}} <- get_report_document(req, report_document_id, opts) do
+      read_and_decompress(document, opts)
+    end
+  end
+
+  defp read_and_decompress(%{"url" => url} = document, opts) when is_binary(url) do
+    request_opts =
+      opts
+      |> Keyword.drop([:enable_content_encoding_url_header])
+      |> Keyword.merge(method: :get, url: url)
+      |> Keyword.put_new(:raw, true)
+      |> Keyword.put_new(:retry, false)
+
+    case Req.request(request_opts) do
+      {:ok, %Req.Response{status: status, body: body}} when status in 200..299 ->
+        decompress(body, document["compressionAlgorithm"])
+
+      {:ok, %Req.Response{status: status, body: body}} ->
+        {:error, Error.from_response(status, body)}
+
+      {:error, error} ->
+        {:error, Error.wrap(error)}
+    end
+  end
+
+  defp read_and_decompress(_document, _opts) do
+    {:error,
+     Error.from_response(nil, %{
+       "errors" => [
+         %{
+           "code" => "MissingReportDocumentUrl",
+           "message" => "Report document metadata did not include a download URL"
+         }
+       ]
+     })}
+  end
+
+  defp decompress(body, "GZIP") do
+    {:ok, :zlib.gunzip(body)}
+  rescue
+    error -> {:error, Error.wrap(error)}
+  end
+
+  defp decompress(body, _none), do: {:ok, body}
+
   @spec download_report_document(String.t() | map(), term(), keyword()) ::
           {:ok, Req.Response.t()} | {:error, Error.t()}
   def download_report_document(url_or_document, into, opts \\ [])
