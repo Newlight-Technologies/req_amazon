@@ -34,6 +34,12 @@ defmodule ReqAmazon.SpApi.RateLimitTest do
     assert RateLimit.retry(%Req.Request{}, response(429)) == true
   end
 
+  test "429 defers to a caller-supplied :retry_delay (avoids Req's {:delay} conflict)" do
+    request = Req.new(retry_delay: 10)
+
+    assert RateLimit.retry(request, response(429, %{"x-amzn-ratelimit-limit" => ["0.5"]})) == true
+  end
+
   test "other transient statuses and transport errors retry like :transient" do
     assert RateLimit.retry(%Req.Request{}, response(503)) == true
     assert RateLimit.retry(%Req.Request{}, response(500)) == true
@@ -76,6 +82,38 @@ defmodule ReqAmazon.SpApi.RateLimitIntegrationTest do
     end)
 
     req = Client.new(credentials: credentials, plug: {Req.Test, stub_name()})
+
+    assert {:ok, %Response{body: %{"AmazonOrderId" => "o-1"}}} = Orders.get_order(req, "o-1")
+    assert :counters.get(counter, 1) == 2
+  end
+
+  test "a caller :retry_delay does not break rate-limited 429 retries", %{
+    credentials: credentials
+  } do
+    counter = :counters.new(1, [:atomics])
+
+    stub_with_token(fn conn ->
+      {"sellingpartnerapi-na.amazon.com", "/orders/v0/orders/o-1"} =
+        {conn.host, conn.request_path}
+
+      attempt = :counters.get(counter, 1)
+      :counters.add(counter, 1, 1)
+
+      if attempt == 0 do
+        conn
+        |> Plug.Conn.put_resp_header("x-amzn-ratelimit-limit", "1000")
+        |> Plug.Conn.put_resp_content_type("application/json")
+        |> Plug.Conn.send_resp(
+          429,
+          Jason.encode!(%{"errors" => [%{"code" => "QuotaExceeded", "message" => "slow down"}]})
+        )
+      else
+        Req.Test.json(conn, %{"payload" => %{"AmazonOrderId" => "o-1"}})
+      end
+    end)
+
+    # Setting :retry_delay must not crash when a rate-limited 429 occurs.
+    req = Client.new(credentials: credentials, retry_delay: 1, plug: {Req.Test, stub_name()})
 
     assert {:ok, %Response{body: %{"AmazonOrderId" => "o-1"}}} = Orders.get_order(req, "o-1")
     assert :counters.get(counter, 1) == 2
