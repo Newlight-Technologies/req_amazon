@@ -27,7 +27,13 @@ defmodule ReqAmazonTest do
       end
     end)
 
-    req = Client.new(credentials: credentials, sandbox: true, plug: {Req.Test, stub_name()})
+    req =
+      Client.new(
+        credentials: credentials,
+        sign?: true,
+        sandbox: true,
+        plug: {Req.Test, stub_name()}
+      )
 
     assert {:ok, %Response{body: %{"AmazonOrderId" => "123-1234567-1234567"}}} =
              Orders.get_order(req, "123-1234567-1234567")
@@ -47,7 +53,7 @@ defmodule ReqAmazonTest do
     assert x_amz_date =~ ~r/^\d{8}T\d{6}Z$/
   end
 
-  test "caller-supplied access token skips token exchange and honors endpoint overrides" do
+  test "caller token, region table, and signing compose" do
     Req.Test.stub(stub_name(), fn conn ->
       case {conn.host, conn.request_path} do
         {"api.amazon.com", "/auth/o2/token"} ->
@@ -63,17 +69,63 @@ defmodule ReqAmazonTest do
       end
     end)
 
+    # :eu resolves both the endpoint and the eu-west-1 signing region from the
+    # library's region table — no base_url or aws_region needed.
     req =
       Client.new(
         access_token: "caller-token",
-        base_url: "https://sellingpartnerapi-eu.amazon.com",
+        region: :eu,
+        sign?: true,
         credentials: %{
           aws_access_key_id: "AKIA-EU-1",
-          aws_secret_access_key: "secret-access-eu-1",
-          aws_region: "eu-west-1"
+          aws_secret_access_key: "secret-access-eu-1"
         },
         plug: {Req.Test, stub_name()}
       )
+
+    assert {:ok, %Response{body: %{"AmazonOrderId" => "123-1234567-1234567"}}} =
+             Orders.get_order(req, "123-1234567-1234567")
+  end
+
+  test "default client does not sign and needs no AWS credentials" do
+    stub_with_token(fn conn ->
+      {"sellingpartnerapi-na.amazon.com", "/orders/v0/orders/123-1234567-1234567"} =
+        {conn.host, conn.request_path}
+
+      assert Plug.Conn.get_req_header(conn, "authorization") == []
+      assert_header(conn, "x-amz-access-token", "lwa-token")
+      Req.Test.json(conn, %{"payload" => %{"AmazonOrderId" => "123-1234567-1234567"}})
+    end)
+
+    # No aws_access_key_id / aws_secret_access_key supplied.
+    req =
+      Client.new(
+        credentials: %{
+          client_id: "client-1",
+          client_secret: "secret-1",
+          refresh_token: "refresh-1"
+        },
+        plug: {Req.Test, stub_name()}
+      )
+
+    assert {:ok, %Response{body: %{"AmazonOrderId" => "123-1234567-1234567"}}} =
+             Orders.get_order(req, "123-1234567-1234567")
+  end
+
+  test "a caller-managed token needs no credentials at all when not signing" do
+    Req.Test.stub(stub_name(), fn conn ->
+      case {conn.host, conn.request_path} do
+        {"api.amazon.com", _path} ->
+          flunk("unexpected LWA token request")
+
+        {"sellingpartnerapi-na.amazon.com", "/orders/v0/orders/123-1234567-1234567"} ->
+          assert Plug.Conn.get_req_header(conn, "authorization") == []
+          assert_header(conn, "x-amz-access-token", "caller-token")
+          Req.Test.json(conn, %{"payload" => %{"AmazonOrderId" => "123-1234567-1234567"}})
+      end
+    end)
+
+    req = Client.new(access_token: "caller-token", plug: {Req.Test, stub_name()})
 
     assert {:ok, %Response{body: %{"AmazonOrderId" => "123-1234567-1234567"}}} =
              Orders.get_order(req, "123-1234567-1234567")

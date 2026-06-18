@@ -17,7 +17,7 @@ defmodule ReqAmazon.SpApi.Token.Lwa do
       |> Keyword.merge(form: form(grant, credentials))
       |> Keyword.put_new(:retry, :transient)
 
-    case Req.post(ReqAmazon.SpApi.token_url(), options) do
+    case Req.post(ReqAmazon.SpApi.Config.token_url(), options) do
       {:ok,
        %Req.Response{
          status: status,

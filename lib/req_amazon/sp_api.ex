@@ -35,14 +35,12 @@ defmodule ReqAmazon.SpApi do
         )
   """
 
-  alias ReqAmazon.SpApi.{Error, Headers, Response}
+  alias ReqAmazon.SpApi.{Config, Error, Headers, Response}
   alias ReqAmazon.SpApi.Token
 
-  @default_endpoint "https://sellingpartnerapi-na.amazon.com"
   @default_marketplace_id "ATVPDKIKX0DER"
   @default_region "us-east-1"
-  @default_token_url "https://api.amazon.com/auth/o2/token"
-  @plugin_options [:access_token, :credentials, :grantless_scope, :sandbox]
+  @plugin_options [:access_token, :config, :credentials, :grantless_scope]
   @forward_request_option_keys [
     :adapter,
     :connect_options,
@@ -67,9 +65,11 @@ defmodule ReqAmazon.SpApi do
   @credential_keys @required_signing_credential_keys ++
                      @required_lwa_credential_keys ++ [:aws_region]
 
+  # All keys are optional at the type level; which are actually required depends
+  # on the grant and whether signing is enabled (see `credentials/2`).
   @type credentials :: %{
-          required(:aws_access_key_id) => String.t(),
-          required(:aws_secret_access_key) => String.t(),
+          optional(:aws_access_key_id) => String.t(),
+          optional(:aws_secret_access_key) => String.t(),
           optional(:client_id) => String.t(),
           optional(:client_secret) => String.t(),
           optional(:refresh_token) => String.t(),
@@ -84,13 +84,17 @@ defmodule ReqAmazon.SpApi do
   - `:credentials` - SP-API credentials for LWA and SigV4 signing.
   - `:access_token` - caller-managed LWA access token. When present, the plugin
     injects the `x-amz-access-token` header and skips the internal token refresh.
-  - `:sandbox` - rewrites the request host to Amazon's sandbox host.
+  - `:grantless_scope` - mints/caches a grantless `client_credentials` token.
+  - `:config` - a `ReqAmazon.SpApi.Config` (or keyword list) controlling the AWS
+    signing region, user agent, sandbox, and whether to sign (`sign?`). Sandbox
+    and signing are driven by the config rather than separate options.
   """
   @spec attach(Req.Request.t(), keyword()) :: Req.Request.t()
   def attach(%Req.Request{} = request, options \\ []) do
     request
     |> Req.Request.register_options(@plugin_options)
     |> Req.Request.merge_options(options)
+    |> ensure_config()
     |> ensure_credentials()
     |> ensure_aws_sigv4()
     |> Req.Request.prepend_request_steps(
@@ -149,13 +153,19 @@ defmodule ReqAmazon.SpApi do
   end
 
   def credentials(%{} = credentials, opts) do
-    required_keys =
-      @required_signing_credential_keys ++
-        cond do
-          Keyword.get(opts, :require_lwa?, true) -> @required_lwa_credential_keys
-          Keyword.get(opts, :require_lwa_app?, false) -> @lwa_app_credential_keys
-          true -> []
-        end
+    signing_keys =
+      if Keyword.get(opts, :require_signing?, true),
+        do: @required_signing_credential_keys,
+        else: []
+
+    lwa_keys =
+      cond do
+        Keyword.get(opts, :require_lwa?, true) -> @required_lwa_credential_keys
+        Keyword.get(opts, :require_lwa_app?, false) -> @lwa_app_credential_keys
+        true -> []
+      end
+
+    required_keys = signing_keys ++ lwa_keys
 
     normalized =
       Enum.reduce(@credential_keys, %{}, fn key, acc ->
@@ -182,40 +192,26 @@ defmodule ReqAmazon.SpApi do
   end
 
   @doc false
-  @spec endpoint() :: String.t()
-  def endpoint do
-    Application.get_env(:req_amazon, :sp_api_endpoint, @default_endpoint)
-  end
-
-  @doc false
   @spec marketplace_id() :: String.t()
   def marketplace_id do
     Application.get_env(:req_amazon, :sp_api_marketplace_id, @default_marketplace_id)
   end
 
   @doc false
-  @spec token_url() :: String.t()
-  def token_url do
-    Application.get_env(:req_amazon, :sp_api_token_url, @default_token_url)
-  end
-
-  @doc false
-  @spec user_agent() :: String.t()
-  def user_agent do
-    Application.get_env(:req_amazon, :sp_api_user_agent, default_user_agent())
-  end
-
-  @doc false
-  @spec aws_sigv4(credentials()) :: keyword()
-  def aws_sigv4(credentials) do
-    credentials = credentials(credentials, require_lwa?: false)
+  @spec aws_sigv4(credentials(), String.t()) :: keyword()
+  def aws_sigv4(credentials, aws_region) do
+    credentials = credentials(credentials, require_lwa?: false, require_signing?: true)
 
     [
       access_key_id: credentials.aws_access_key_id,
       secret_access_key: credentials.aws_secret_access_key,
-      region: credentials.aws_region,
+      region: aws_region,
       service: "execute-api"
     ]
+  end
+
+  defp ensure_config(request) do
+    Req.Request.merge_options(request, config: Config.resolve(request.options[:config]))
   end
 
   defp ensure_credentials(request) do
@@ -223,27 +219,53 @@ defmodule ReqAmazon.SpApi do
 
     case Map.get(request.options, :credentials) do
       nil ->
-        Req.Request.merge_new_options(request, credentials: credentials(nil, opts))
+        # A caller-managed token with no signing needs no credentials at all, so
+        # don't force `:sp_api_credentials` to be configured just to resolve an
+        # empty requirement.
+        if credentials_required?(opts) do
+          Req.Request.merge_new_options(request, credentials: credentials(nil, opts))
+        else
+          Req.Request.merge_new_options(request, credentials: %{})
+        end
 
       provided ->
         Req.Request.merge_options(request, credentials: credentials(provided, opts))
     end
   end
 
+  defp credentials_required?(opts) do
+    Keyword.get(opts, :require_signing?, true) or
+      Keyword.get(opts, :require_lwa?, true) or
+      Keyword.get(opts, :require_lwa_app?, false)
+  end
+
   defp credential_requirement(request) do
-    cond do
-      access_token_provided?(request) -> [require_lwa?: false]
-      grantless_scope(request) -> [require_lwa?: false, require_lwa_app?: true]
-      true -> [require_lwa?: true]
-    end
+    sign? = request.options[:config].sign?
+
+    lwa =
+      cond do
+        access_token_provided?(request) -> [require_lwa?: false]
+        grantless_scope(request) -> [require_lwa?: false, require_lwa_app?: true]
+        true -> [require_lwa?: true]
+      end
+
+    [{:require_signing?, sign?} | lwa]
   end
 
   defp ensure_aws_sigv4(request) do
-    Req.Request.merge_new_options(request, aws_sigv4: aws_sigv4(request.options[:credentials]))
+    config = request.options[:config]
+
+    if config.sign? do
+      Req.Request.merge_new_options(request,
+        aws_sigv4: aws_sigv4(request.options[:credentials], config.aws_region)
+      )
+    else
+      request
+    end
   end
 
   defp sp_api_sandbox_url(request) do
-    if request.options[:sandbox] do
+    if request.options[:config].sandbox? do
       cond do
         request.url.scheme ->
           %{request | url: sandbox_uri(request.url)}
@@ -286,7 +308,7 @@ defmodule ReqAmazon.SpApi do
   end
 
   defp sp_api_user_agent(request) do
-    Req.Request.put_new_header(request, "user-agent", user_agent())
+    Req.Request.put_new_header(request, "user-agent", request.options[:config].user_agent)
   end
 
   defp sp_api_unwrap_errors({request, %Req.Response{status: status} = response})
@@ -348,14 +370,5 @@ defmodule ReqAmazon.SpApi do
       {:ok, value} -> value
       :error -> Map.get(credentials, Atom.to_string(key))
     end
-  end
-
-  defp default_user_agent do
-    version =
-      :req_amazon
-      |> Application.spec(:vsn)
-      |> to_string()
-
-    "req_amazon/#{version} (Elixir/#{System.version()})"
   end
 end
