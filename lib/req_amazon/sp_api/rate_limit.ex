@@ -28,12 +28,22 @@ defmodule ReqAmazon.SpApi.RateLimit do
   """
   @spec retry(Req.Request.t(), Req.Response.t() | Exception.t()) ::
           {:delay, non_neg_integer()} | boolean()
-  def retry(_request, %Req.Response{status: 429} = response) do
+  def retry(request, %Req.Response{status: 429} = response) do
     cond do
       # Let Req honor an explicit Retry-After (delta-seconds or HTTP-date).
-      Req.Response.get_retry_after(response) -> true
-      rate = positive_rate(response) -> {:delay, rate_delay_ms(rate)}
-      true -> true
+      Req.Response.get_retry_after(response) ->
+        true
+
+      # Req raises if a retry function returns {:delay, ms} while :retry_delay is
+      # also set, so defer to the caller's delay when they supplied one.
+      Req.Request.get_option(request, :retry_delay) ->
+        true
+
+      rate = positive_rate(response) ->
+        {:delay, rate_delay_ms(rate)}
+
+      true ->
+        true
     end
   end
 
